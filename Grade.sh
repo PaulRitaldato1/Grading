@@ -85,10 +85,23 @@ fi
 #Attempting to detect if init() needs to be called
 if $init; then
 	init
-elif ! i-d ".grader";  then
+elif ! -d ".grader";  then
 	echo "Auto-detected that init() has never been run. Running init()"
 	init
 fi
+
+#Start of the main script
+
+
+
+
+
+
+
+
+
+
+
 
 
 
