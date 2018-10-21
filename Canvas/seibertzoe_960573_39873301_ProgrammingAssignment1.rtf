@@ -1,0 +1,373 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red53\green53\blue53;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab560
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf2 #include <iostream>\
+#include <sstream>\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+
+\b \cf2 using namespace 
+\b0 std;\
+\
+
+\b struct 
+\b0 node \{\
+    string input;\
+    
+\b struct 
+\b0 node *next\{\};\
+\};\
+\
+// Define a global variable to point to first line inputed\
+
+\b struct 
+\b0 node *start = 
+\b nullptr
+\b0 ;\
+\
+//Declarations\
+
+\b void 
+\b0 insertLast(
+\b struct 
+\b0 node *, string);\
+
+\b void 
+\b0 insertRandom(
+\b struct 
+\b0 node *, 
+\b int
+\b0 , string);\
+
+\b void 
+\b0 deleteRandom(
+\b struct 
+\b0 node *, 
+\b int
+\b0 );\
+
+\b void 
+\b0 view(
+\b struct 
+\b0 node *);\
+
+\b void 
+\b0 search(
+\b struct 
+\b0 node *, 
+\b const 
+\b0 string &);\
+
+\b void 
+\b0 edit(
+\b struct 
+\b0 node *, 
+\b int
+\b0 , string);\
+\
+
+\b int 
+\b0 main() \{\
+    //Variables created to store\
+    string userInput; //Stores the users input into a string\
+    string temp; //Stores the text from user input\
+    string str_index; //Stores the index of the users statement\
+    
+\b int 
+\b0 index;\
+    
+\b unsigned long 
+\b0 n; //Temporary storage of inputs\
+    stringstream ss;\
+\
+    //Loop to take in user commands until they want to quit\
+    
+\b while
+\b0 (
+\b true
+\b0 ) \{\
+    getline(cin, userInput);\
+\
+    
+\b if 
+\b0 (userInput == "print") \{ //To print list of inputs\
+        view(start);\
+    \}\
+    
+\b else if 
+\b0 (userInput == "quit")\
+        
+\b break
+\b0 ; //Exits loop\
+    
+\b else if 
+\b0 (userInput.substr(0,6) == "search") \{ //To locate user input index\
+        temp = userInput.substr(8);\
+        temp.pop_back(); //Leaves out quotation marks when printing\
+        search(start, temp);\
+    \}\
+    
+\b else if 
+\b0 (userInput.substr(0,4) == "edit") \{ //To edit a previous input\
+        n = userInput.find(' ', 5);\
+        str_index = userInput.substr(5, (n - 5));\
+\
+        //String index to numerical\
+        ss << str_index;\
+        ss >> index;\
+        ss.clear();\
+        temp = userInput.substr((n + 2));\
+        temp.pop_back();\
+        edit(start, index, temp);\
+    \}\
+    
+\b else if 
+\b0 (userInput.substr(0,6) == "delete") \{ //To delete a previous input\
+        str_index = userInput.substr(7);\
+\
+        ss << str_index;\
+        ss >> index;\
+        ss.clear();\
+        deleteRandom(start, index);\
+    \}\
+    
+\b else if 
+\b0 (userInput.substr(0,9) == "insertEnd") \{ //To enter an input\
+        temp = userInput.substr(11);\
+        temp.pop_back();\
+        insertLast(start, temp);\
+    \}\
+    //To insert at random\
+    
+\b else 
+\b0 \{\
+        n = userInput.find(' ', 7);\
+        str_index = userInput.substr(7, (n - 7));\
+\
+        ss << str_index;\
+        ss >> index;\
+        ss.clear();\
+        temp = userInput.substr((n + 2));\
+        temp.pop_back();\
+        insertRandom(start, index, temp);\
+        \}\
+    \}\
+    
+\b return 
+\b0 0;\
+\}\
+\
+//Creates the new line for user input\
+
+\b struct 
+\b0 node* createNode(string value) \{\
+    
+\b auto 
+\b0 *n = 
+\b new 
+\b0 node;\
+    n -> input = std::move(value);\
+    n -> next = 
+\b nullptr
+\b0 ;\
+    
+\b return
+\b0 (n);\
+\}\
+\
+//Creates a new line at the end of the rest of the lines\
+
+\b void 
+\b0 insertLast(
+\b struct 
+\b0 node *p, string temp) \{\
+    
+\b struct 
+\b0 node *n;\
+    n = createNode(std::move(temp));\
+    
+\b if 
+\b0 (start == 
+\b nullptr
+\b0 ) \{\
+        start = n;\
+    \}\
+    
+\b else 
+\b0 \{\
+        
+\b while 
+\b0 (p -> next != 
+\b nullptr
+\b0 )\
+            p = p -> next;\
+        p -> next = n;\
+    \}\
+\}\
+\
+//Creates new line according to user indices\
+
+\b void 
+\b0 insertRandom(
+\b struct 
+\b0 node *p, 
+\b int 
+\b0 index, string temp) \{\
+    
+\b struct 
+\b0 node *prev = 
+\b nullptr
+\b0 ;\
+    
+\b struct 
+\b0 node* n = createNode(std::move(temp));\
+    
+\b int 
+\b0 i;\
+    
+\b for 
+\b0 (i = 1; i < index; i++) \{\
+        prev = p;\
+        p = p -> next;\
+    \}\
+    
+\b if 
+\b0 (prev == 
+\b nullptr
+\b0 ) \{\
+        n -> next = start;\
+        start = n;\
+    \}\
+    
+\b else 
+\b0 \{\
+        n -> next = p;\
+        prev -> next = n;\
+    \}\
+\}\
+\
+//Deletes a line according to user indices\
+
+\b void 
+\b0 deleteRandom(
+\b struct 
+\b0 node *p, 
+\b int 
+\b0 index) \{\
+    
+\b struct 
+\b0 node *q;\
+    
+\b struct 
+\b0 node *prev = 
+\b nullptr
+\b0 ;\
+    
+\b int 
+\b0 i;\
+\
+    
+\b for 
+\b0 (i = 1; i < index; i++) \{\
+        prev = p;\
+        p = p -> next;\
+    \}\
+    
+\b if 
+\b0 (prev == 
+\b nullptr
+\b0 ) \{\
+        q = p;\
+        start = start -> next;\
+    \}\
+    
+\b else 
+\b0 \{\
+        q = p;\
+        prev -> next = p -> next;\
+    \}\
+    
+\b delete 
+\b0 q;\
+\}\
+\
+//Edits a line according to user indices\
+
+\b void 
+\b0 edit(
+\b struct 
+\b0 node *p, 
+\b int 
+\b0 index, string temp) \{\
+    
+\b int 
+\b0 i;\
+    
+\b for 
+\b0 (i = 1; i < index; i++) \{\
+        p = p -> next;\
+    \}\
+    p -> input = std::move(temp);\
+\}\
+\
+//Finds the user inputed string\
+
+\b void 
+\b0 search(
+\b struct 
+\b0 node *p, 
+\b const 
+\b0 string &temp) \{\
+    
+\b int 
+\b0 i = 1;\
+    
+\b int 
+\b0 find = 0;\
+    
+\b while 
+\b0 (p) \{\
+        
+\b if 
+\b0 (p -> input.find(temp) != -1) \{\
+            cout << i << " " << p -> input << endl;\
+            find = 1;\
+        \}\
+        p = p -> next;\
+        i++;\
+    \}\
+    
+\b if 
+\b0 (find == 0) \{\}\
+    cout << "Not Found" << endl;\
+\}\
+\
+
+\b void 
+\b0 view(
+\b struct 
+\b0 node *p) \{\
+    
+\b if 
+\b0 (p == 
+\b nullptr
+\b0 )\
+        printf("Document is empty\\n");\
+    
+\b else 
+\b0 \{\
+        
+\b int 
+\b0 i = 1;\
+        
+\b while 
+\b0 (p) \{\
+            cout << i << " " << p -> input << endl;\
+            p = p -> next;\
+            i++;\
+        \}\
+    \}\
+\}}

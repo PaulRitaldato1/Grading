@@ -1,0 +1,24 @@
+What is the computational complexity of the methods in the implementation?
+
+For the LinkedList class:
+push_back - O(1)
+push_front - O(1)
+insert - O(n)
+modify - O(n)
+remove_back - O(1)
+remove_front - O(1)
+remove - O(n)
+begin - O(1)
+end - O(1)
+
+
+
+Your thoughts on the use of linked lists for implementing a line editor. What are the advantages and disadvantages?
+
+A linked list is probably not the best choice here. Since memory is cheap, an array based implementation is probably ideal. The linked list has the disadvantage of an O(n) complexity for every line you wish to modify. Arrays are disadvantaged in insertion. The likelyhood of insertion is probably less than that of modification, however, if the use case of this line editor led you to believe that insertions would be more common, the linked list would be a good choice.
+
+
+
+What did you learn from this assignment and what would you do differently if you had to start over?
+
+We learned how to implement and use linked lists in this assignment. I wouldn't do much different next time, as I ran into no complications while developing this project.

@@ -1,0 +1,7 @@
+Commentary
+
+1) The computational complexity of the following methods: "insertEnd", "insert", "remove" (delete method), "edit", and "search" are O(n).
+
+2) Linked list data structure would be a bad fit for using it as a line editor. As the document becomes larger it will take too long to perform any of the operations. []
+
+3) I've learned how to implement a linked list. I would seperate the Document class and Line structure into seperate header files and source files. 

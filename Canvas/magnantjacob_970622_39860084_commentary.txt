@@ -1,0 +1,14 @@
+COP3530 PA1 - Jacob Magnant - Commentary
+
+-----Complexity-----
+Each method includes a single loop for traversing the linked list to perform their operation, making each method have the complexity O(n).
+
+-----Linked List as for a Line Editor-----
+This implementation of a line editor using a linked list will only function well when the linked list is small, as each function has to traverse the linked list, sometimes entirely, to perform their operation. 
+With a large set of data this inefficiency would be noticeable however the dynamic allocation of memory with a linked list would be a benefit with a large data set over an array.
+With a small data set, if it can fit in an array, the program could be made much more efficient as loops wouldnt be needed for most operations which would reduce the complexity greatly.
+
+-----Reflection-----
+With this assignment I was able to get used to using pointers a bit more, adding to my programming experience. 
+If I was to start over, I would try to reduce the complexity as using loops to traverse the list for each operation seems heavy handed. 
+For instance, the tail of the list could be saved in order to reduce the complexity of the insertEnd operation.

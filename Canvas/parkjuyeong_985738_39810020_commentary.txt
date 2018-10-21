@@ -1,0 +1,13 @@
+Commentary
+
+insertEnd: O(1)
+insert: O(n)
+delete: O(n)
+print: O(n)
+search: O(n)
+edit: O(n)
+
+advantage of LinkedList is that you can add or delete node
+disadvantage is that you have to go from beginning to end to do the function
+I learned how LinkedList works.
+If I had to sart over, I want to use vector, not the linkedlist to do the same task.

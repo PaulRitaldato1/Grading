@@ -1,0 +1,24 @@
+Paolo Garcia
+9/21/18
+COP3530
+
+Commentary:
+1.) The computational complexity of my methods are as follows:
+ - Print: O(n), since it depends linearly on the amount of lines in the document;
+ - Insert: O(n), since it once again depends linearly on the amount of lines in the document;
+ - InsertEnd: O(n), since it is the same as Insert if Insert had index = the last index;
+ - Edit: O(n), since we loop through the list to get to the index listed;
+ - Delete: O(n), since like the others we loop through the list to find out where the line to be deleted is;
+ - InDocument: O(n), since we loop through the list to search for instance(s) of the word desired;
+ - CommandToLine: O(1), since we only do one comparison, which runs in constant time
+ - CommandToIndex: O(1), exactly the same as CommandToLine, except for numbers;
+
+2.) Well I feel that the linked list for a line editor is highly inefficient. I say this since that all our methods to work on the imaginary document of text, we see that many of the functions are highly dependent on the number of nodes/lines we hae in the list, so as the number of lines -> 1000 or 10000, we begin to see very long times to conduct a search or insert an new line at an index. This is the result of linking that linked lists have where you cant go from one node to the next without having the node before it, which results in essentially traveling the whole document over and over again to do what we would like to do. For a better we would need a data structure, where traveling from one part of the list to another doesn't require us to traverse each item AND easily add items to it *cough* not arrays *cough*.
+
+3.) I learned quite a few things from this assignment:
+- I actually like the challenge of software development, which is something i was not sure of in the past.
+- C++ standard library is really full of stuff and should use more often
+- C++ reference material is absolutely trash for ease of finding
+- I definitely like a language where classes are not required (as seen with my C-like implementation with a "class" struct)
+- Data structures for me feel more like a way to better structure my code, vs as the end goal if that makes sense
+- If I were to attempt this again, i would implement a different, more async like structure that isnt dependent on the other linked monkeys so to speak, and maybe in C.

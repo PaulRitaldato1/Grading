@@ -121,36 +121,36 @@ fi
 unzip Zip/*.zip -d Canvas >/dev/null
 cp Zip/*.zip .grader/History/Zips
 echo "moved the .zip file into .grader/History/Zips"
-
 #create an array with all the files
 filenames=(Canvas/*)
-#echo "${filenames[5]}"
+echo "${filenames[2]}"
+exit 0
 #heres where the magic happens bby
 for ((i=0; i<${#filenames[@]}; ++i)); do
+	echo $i
 	offset=0
 	temp="$(basename "$filenames[$i]")"
 	temp=${temp%%_*}
 
 	future=$temp
-	
+	echo $future
 	mkdir StudentsToGrade/"$future"
 
-	while [ temp=future ];
+	while [ $temp == $future ];
 	do
 		mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
 
 		offset=$((offset + 1))
 		echo "offset is $offset"
-		future="$(basename "$filenames[$((i + offset))]")"
-		future=${future%%_*}
-		#echo "$(basename filenames[$((i + offset))])"
-		echo "future is $future"
-		echo "temp is $temp"
 
-		sleep 1
+		future="$(basename "${filenames[$((i+offset))]}")"
+		future=${future%%_*}
+		
+
+		sleep 5
 
 	done
-	i=$((i + offset))
+	i=$((i + offset - 1))
 done
 
 #i=0

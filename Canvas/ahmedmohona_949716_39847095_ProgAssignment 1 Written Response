@@ -1,0 +1,32 @@
+Mohona Ahmed 
+9/20/18
+Data Structures and Algorithms Programming Assignment 1 (Line Editor)
+
+What is the computational complexity of the methods in the implementation?
+
+Since the methods traverse the linked list (O(n)) and nodes are added/deleted (O(1)), the computational complexity is (O(n)). 
+
+To be more specific:
+insertEnd has a complexity of O(n) since the linked list must be traversed(O(n)) and a node is added at the end (0(1))
+insert has a complexity of O(n) since the linked list must be traversed(O(n)) to the proper index and a node is added (0(1))
+Delete has a complexity of O(n) since the linked list must be traversed(O(n)) to the proper index and a node is deleted (0(1))
+edit has a complexity of O(n) since the linked list must be traversed(O(n)) to the proper index and a node is changed (0(1))
+print has a complexity of O(n) since the linked list must be traversed(O(n)) and each line is printed (0(1))
+search has a complexity of O(n) since the linked list must be traversed(O(n)) to the node with the given text
+quit has complexity of O(1)
+
+The main method uses a while loop that calls these functions once each time the loop is run. Since at most each method call is O(n), the complexity for the entire line editor is O(n^2) (worst case) since the program utilizes one nested while loop. 
+
+
+Your thoughts on the use of linked lists for implementing a line editor.  What are the advantages and disadvantages?
+
+The advantages of using a linked list is that reallocation of memory is not necessary like when using an array for list implementation. There is virtually no limitation to size of a linked list. If you are at the correct index of a linked list, the computational complexity for adding/deleting to the list is not very taxing. For use in a line editor, this is useful since adding and deleting lines is common.  A linked list is very useful for the add and delete functionalities of a line editor because not all of the data would have to be changed like in an array where all subsequent data has to be augmented.
+
+However, a linked list does have some disadvantages. A node in a linked list only uses pointers to the next node (and sometimes the previous node), so finding a specific index or value in a linked list takes time. You would would have to traverse a linked list starting at the head in order to get to a specific node. Using a doubly linked list could reduce this time complexity but I did not implement that. 
+
+For my code, each time the line editor had to insert, insert to the end, delete, edit, or search, the entire link list had to be traversed starting from the head of the list. This is computationally expensive. Perhaps an array would have been more advantageous for methods such as edit, search, and insert at end since the specific index could be extracted faster (and modified if need be) than in a linked list implementation. But for adding and deleting purposes of the line editor, a linked list is better as fewer nodes have to be changed. 
+
+
+What did you learn from this assignment and what would you do differently if you had to start over?
+
+If I had to start over to reduce the number of lines in the code, I would define one method that traverses the list for an index for the edit, add, and delete functionalities. Additionally, I would find a more concise way to read in the user input and formulate the method calls. The syntax of the user input found on stepik made it hard for me to write the main method in a clean way. I learned more about the advantages of linked list and how different data structures are better for different applications. 

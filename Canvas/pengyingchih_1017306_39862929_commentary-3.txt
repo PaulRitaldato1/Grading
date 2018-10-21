@@ -1,0 +1,28 @@
+What is the computational complexity of the methods in the implementation?
+
+INSERTEND : O(1)
+INSERT : O(N), could be O(1) with iterator
+DELETE : O(N), could be O(1) with iterator
+EDIT : O(N), could be O(1) with iterator
+Print : O(N)
+Search : O(N)
+
+What are the advantages and disadvantages for using linked lists to implement?
+
+If compared to using array-based list.
+The biggest advantage of using linked list for implementation is that we don't need to specify
+the number of maximum lines allowed in advance. Secondly, the computational complexity for inserting from the
+beginning or end of the editor would be O(1).
+Disadvantage would be more memory usage for pointers and does not allow random access.
+In my opinion, linked list is probably a better option over array-based list for the aforementioned advantages.
+
+What did you learn from this assignment and what would you do differently if you had to start over?
+
+I've learned how to actually implement a linked list in a slightly more complete project than usual exercises. Also,
+I learned the steps to take when using cin and getline together, which is to ignore the '\n' before each getline if used after cin.
+
+I think if I start over, I would probably write similar codes, given that I've already tried to make them concise and efficient. 
+
+
+ 
+
