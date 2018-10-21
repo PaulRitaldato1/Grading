@@ -2,15 +2,21 @@
 
 #function definitions will go here
 init(){
-	#mkdir Results
-	#	mkdir Results/Sections
-	mkdir Students
+  mkdir Zip
+	mkdir Results
+	     mkdir Results/Sections
+  mkdir Canvas
+	mkdir StudentsToGrade
 	mkdir .grader
-	mkdir .grader/Logs
-		touch .grader/Logs/runtime_error_log
-		touch .grader/Logs/compile_log
-		touch .grader/Logs/test_log
-		touch .grader/Logs/script_run_log
+	   mkdir .grader/Logs
+	      touch .grader/Logs/runtime_error_log
+	      touch .grader/Logs/compile_log
+	      touch .grader/Logs/test_log
+	      touch .grader/Logs/script_run_log
+
+     mkdir .grader/History
+        mkdir .grader/History/Zips
+        mkdir .grader/History/Logs
 }
 
 #declaring flag booleans & variables 
@@ -76,6 +82,12 @@ if ! which g++ >/dev/null; then
 
 fi
 
+#Check if unzip is installed
+if ! which unzip >/dev/null; then
+	  echo "Could not find unzip, please install unzip."
+	  exit 1
+
+fi
 #Make sure there is only 1 grading type
 if $type_stdio && $type_interface; then
 	echo "Cannot have -o and -a flags BOTH set. Exiting."
@@ -91,6 +103,36 @@ elif ! -d ".grader";  then
 fi
 
 #Start of the main script
+
+#first thangs first, we have to separate all the students files so that each student has a directory with all their files.
+
+#unzip the file then move the zip into history
+unzip /Zip/*.zip -d Canvas
+mv /Zip/*.zip .grader/History/Zips
+echo "moved the .zip file into .grader/History/Zips"
+
+#create an array with all the files
+filenames=Canvas/*
+
+#heres where the magic happens bby
+for ((i=0; i<${#filenames[@]}; ++i)); do
+	offset=0
+	temp=${filenames[$i]%_*}
+	future=${filenames[$offset + $i]%_*}
+
+	mkdir StudentsToGrade/$future
+
+	while [ temp=future ];
+	do
+
+		mv $filenames[$offset + $i] StudentsToGrade/$future
+		future=${filenames[$offset + $i]%_*}
+		offset=$((offset + 1))
+	done
+
+	i=$((i + $offset))
+done
+
 
 
 
