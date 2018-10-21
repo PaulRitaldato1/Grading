@@ -1,0 +1,263 @@
+//Matt McDuffie
+//Assignment 1
+//COP 3530
+
+#include<iostream>
+#include<cstdio>
+#include<cstdlib>
+#include<bits/stdc++.h>
+using namespace std;
+
+//Declare node 
+
+struct node {
+
+	string edit;
+	struct node *next;
+
+};
+
+struct node *head = NULL;
+
+    //Declare functions
+    struct node* createnode(void);
+    void insertEnd(struct node *,string);
+    void insertLine(struct node *,int,string);
+    void deleteLine(struct node *,int);
+    void update(struct node *,int,string);
+    void search(struct node *,string);
+    void display(struct node *);
+
+
+//Method for creating a node with inputs 
+struct node *createnode(string phrase) {
+
+	struct node *insert;
+	insert = new(struct node);
+    if (insert == NULL) {
+
+		cout<<"Memory not allocated "<<endl;
+		return 0;
+
+	}
+
+	else {
+
+		insert->edit = phrase;
+		insert->next = NULL;
+		return insert;
+	}	
+}
+
+//Method inserting a node at the end of the method
+void insertEnd(struct node *cur, string temp) {
+
+    struct node *insert;
+    insert = createnode(temp);
+    
+    //If there is no head, assign it to insert
+    if (head == NULL) {
+        head = insert;
+    }
+    else {
+        
+        //Traverse through the list until the end and add the node to the end
+	    while (cur->next != NULL) {
+		    cur = cur->next;
+	    }
+	    cur->next = insert;
+    }
+}
+
+//Method inserting a node into a specified line in the document
+void insertLine(struct node *cur, int line, string phrase) {
+	
+    struct node *prev = NULL;
+    //struct node *cur = p;
+    int counter = 1;
+    struct node *insert;
+    insert = createnode(phrase);
+
+
+        //Traverse through the node, identifying whether the line specified is the first, middle or last and then inserting
+        while (cur != NULL) {
+    
+            if (line == 1){
+                insert->next = head;
+                head = insert;
+            }    
+            
+            else if (counter == line) {             
+                insert->next = cur;
+                prev->next = insert;
+                counter++;
+            } 
+            else if (cur->next == NULL && line == (counter + 1)) {
+                cur->next = insert;
+                prev = cur;
+                cur = cur->next;
+                break;
+            }
+            else {
+                prev = cur;
+                cur = cur->next;
+                counter++;
+            }
+        }
+}
+
+
+//Method deleting node at a specified line
+void deleteLine(struct node *cur, int line) {
+
+	struct node *prev = NULL;
+	struct node *del;
+	int counter = 1;
+
+	while (cur != NULL) {
+
+        //Identify the spot in the list, assign to an unused variable and skip over it
+		if (counter == line) {
+			if (head == cur) {
+				del = cur;
+                head = head->next;
+			}
+			del = cur;
+			prev->next = cur->next;	
+		}
+
+		prev = cur;
+		cur = cur->next;
+		counter++;
+	}
+}
+
+//Method updating the phrase at a specified line with a new phrase
+void update(struct node *cur, int line, string phrase) {
+
+	for (int i = 1; i < line; i++){
+		cur = cur->next;
+	}
+
+	cur->edit = phrase;
+}
+
+//Method searching through the list for a line with the specified phrase
+void search(struct node *cur,string phrase) {
+
+    //Declare variables
+    int i=1;
+    int flag = 0;
+
+    while(cur != NULL) {
+        //If phrase is found, print out with line number, traversing through the list to find all lines with the phrase
+        if(cur->edit.find(phrase)!=-1) { 
+            cout<<i<<" "<<cur->edit<<endl;
+            cur = cur->next;
+            flag = 1;
+            i++;
+        }
+        else if (cur->edit.find(phrase) == -1){
+            cur=cur->next;
+            i++;
+        }
+    }
+    if(flag == 0) //string not found
+    cout<<"not found"<<endl;
+}
+    
+//Method displaying the node with its line number
+void display(struct node *cur) {
+	
+	int i = 1;
+	if (cur == NULL) {
+		cout << "uh oh";
+	}
+
+	else {
+		while (cur != NULL) {
+			cout << i << " " << cur->edit << endl;
+			cur = cur->next;
+			i++;
+		}
+	}
+}
+
+
+int main() {
+    
+    //Declare variables
+    string input;
+    string quote; 
+    string str_index; 
+    int index;
+    int temp; 
+    stringstream ss;
+
+    while(1) {
+        getline(cin, input);
+        
+        //Go through different possibilities of inputs
+        if(input == "print") {
+            display(head);
+        }
+        else if(input == "quit") { 
+            break; 
+        }
+        //For search take off the quotation marks 
+        else if(input.substr(0,6) == "search") {
+            quote = input.substr(8);
+            quote.pop_back(); 
+            search(head,quote);
+        }
+        //For edit find the line number after the first space
+        else if(input.substr(0,4) == "edit") {
+            temp = input.find(" ", 5); 
+
+            str_index = input.substr(5, temp - 5);
+            
+            //convert indices from string to int
+            ss<<str_index;
+            ss>>index;
+            ss.clear();
+
+            //Remove quotes
+            quote = input.substr(temp + 2);
+            quote.pop_back(); 
+            update(head, index, quote);
+        }
+        else if(input.substr(0,6) == "delete") {
+            str_index = input.substr(7);
+
+            //convert indices from string to int
+            ss<<str_index;
+            ss>>index;
+            ss.clear();
+            deleteLine(head, index);
+        }
+        //Remove quotes to insert at the end of the document
+        else if(input.substr(0,9) == "insertEnd") {
+            quote = input.substr(11);
+            quote.pop_back(); 
+            insertEnd(head, quote);
+        }
+        else {
+            temp = input.find(" ", 7); //search space after 1st space
+
+            //Assign indices
+            str_index = input.substr(7, temp - 7);
+
+            //convert indices from string to int
+            ss<<str_index;
+            ss>>index;
+            ss.clear();
+
+            //Remove quotes
+            quote = input.substr(temp + 2);
+            quote.pop_back(); 
+            insertLine(head, index, quote);
+        }
+    }
+return 0;
+}
+

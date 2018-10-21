@@ -1,0 +1,64 @@
+Steven Halam Paek
+COP 3530
+Programming Assignment 1
+Linked List Line Editor 
+Commentary
+--------------------------------------------------------------------------------
+Computational complexity of the methods in the implementation:
+--------------------------------------------------------------------------------
+insertEnd-> O(n), this method will increment through 
+all nodes until it reaches the last node, then adds the node using a for loop.
+
+insertNode-> O(n), this method has a few conditional checks, but 
+those checks are all O(1). The method will increment through the
+linked list until the desired node is found with a for loop, and will add it.
+
+deleteNode-> O(n), this method is incredibly similar to insert node 
+in terms of implementation. Using a for loop, it will iterate through 
+the linked list until the desired node is found and will delete the specified node.
+
+editNode-> O(n), this method will increment through the linked list 
+with a for loop until it finds the desired node, and then just replaces 
+the data value corresponding to that node.
+
+searchNode-> O(n), this method uses a for loop to increment through the linked list,
+checking every node's value to see if it matches the desired string.
+
+print-> O(n), this is very similar to search node in that it will go through 
+every node using a for loop and print its value. 
+
+--------------------------------------------------------------------------------
+My Thoughts on using linked lists to implement a line editor
+--------------------------------------------------------------------------------
+I think it is a terrible idea to implement a line editor using linked lists. All
+the methods are O(n), except insertEnd could probably be O(1) if you implement 
+a head/tail and just attach the node at the tail. Unless you keep track of an
+iterator, which can end up being lots of work, only some of these methods can be
+O(1), like delete/insert. A tree would be way better because then we could 
+improve the complexity to O(log(n)).
+Some advantages of the linked list implementation is its simplicity. For 
+example, when removing or inserting nodes in the middle of the list, I just
+need to adjust the next pointers of the neighboring nodes, whereas something
+like an array would require every position before or after to be shifted. This
+could potentially become very expensive. 
+A major disadvantage is that it is very troublesome to keep track of iterators to
+make the time complexity of any of these methods to be better than O(n). 
+Essentially every method needs to go through the entire list and cannot target an
+arbitrary node of the list to make its complexity O(1). This means expensive
+computations to do things as simple as insert a node somewhere in the middle.
+
+--------------------------------------------------------------------------------
+Lessons Learned from this Assignment and Future Adjustments
+--------------------------------------------------------------------------------
+I would have tried to use a doubly linked list so that I could make insertEnd
+constant time O(1). Other than that, I can't imagine how I could improve the other
+functions by only using a linked list to get them O(1). Even using an iterator,
+I would need to constantly update the iterator, and that could end up being just
+as expensive as using a for loop to search through all nodes, but with an added
+headache of making sure the iterator is right. However, I learned how pleasant it is 
+to use a linked list for line editors to just rearrange the next nodes, instead
+of having to shift values left and right for insert/delete. Also, since much
+of the functions had similar structures, it was easy to implement the code. Another 
+thing I would try to do is implement sentinal nodes, instead of just calling the
+first real node head. That way, my methods could be written more smoothly, without
+special cases to handle edge cases.

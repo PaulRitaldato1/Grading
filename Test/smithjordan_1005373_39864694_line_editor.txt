@@ -1,0 +1,196 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+//your linked list implementation here
+class LinkedList {
+	public:
+		struct Node {
+			string data;
+			Node* next = nullptr;
+			Node* prev = nullptr;
+		};
+		void InsertEnd(string insertThis);
+		void Insert(int index, string insertThis);
+		void Edit(int index, string newLine);
+		void Delete(int index);
+		void Search(string findThis);
+		void Print();
+	private:
+		int count = 0;
+		Node* head = nullptr;
+		Node* tail = nullptr;
+};
+
+void LinkedList::InsertEnd(string insertThis) {
+	Node* newNode = new Node;
+	newNode->data = insertThis;
+	if (head == nullptr) {
+		head = newNode;
+		tail = newNode;
+	}
+	else {
+		newNode->prev = tail;
+		tail->next = newNode;
+		newNode->next = nullptr;
+		tail = newNode;
+	}
+	count++;
+}
+
+void LinkedList::Insert(int index, string insertThis) {
+	if (index >= 1 && index <= count + 1) {
+		Node* newNode = new Node;
+		newNode->data = insertThis;
+		if (index == 1) { // If there's no nodes in the list
+			if (head == nullptr) {
+				head = newNode;
+				tail = newNode;
+			}
+			else {
+				newNode->next = head;
+				head->prev = newNode;
+				newNode->prev = nullptr;
+				head = newNode;
+			}
+		}
+		else if (index <= count) { // If there's at least one node (a head)
+			Node* temp = head;
+			for (int i = 1; i < index; i++)
+				temp = temp->next;
+			newNode->prev = temp->prev;
+			newNode->prev->next = newNode;
+			newNode->next = temp;
+			temp->prev = newNode;
+		}
+        else if (index == count + 1) {
+            newNode->data = insertThis;
+		    newNode->prev = tail;
+		    tail->next = newNode;
+		    newNode->next = nullptr;
+		    tail = newNode;
+        }
+		count++;
+	}
+}
+
+void LinkedList::Edit(int index, string newLine) {
+	if (index >= 1 && index <= count) {
+		Node* curr = head;
+		for (int i = 1; i < index; i++)
+			curr = curr->next;
+		curr->data = newLine;
+	}
+}
+
+void LinkedList::Delete(int index) {
+	if (index >= 1 && index <= count) {
+		Node* deleteThis;
+		if (index == 1) {
+			if (count != 1) {
+				deleteThis = head;
+				deleteThis->next->prev = nullptr;
+				head = deleteThis->next;
+				delete deleteThis;
+			}
+		}
+		else if (index == count) {
+			if (count != 1) {
+				deleteThis = tail;
+				deleteThis->prev->next = nullptr;
+				tail = deleteThis->prev;
+				delete deleteThis;
+			}
+		}
+		else {
+			deleteThis = head;
+			for (int i = 1; i < index; i++)
+				deleteThis = deleteThis->next;
+			deleteThis->next->prev = deleteThis->prev;
+			deleteThis->prev->next = deleteThis->next;
+			delete deleteThis;
+		}
+		count--;
+	}
+}
+
+void LinkedList::Search(string findThis) {
+	Node *curr = head;
+	bool foundOne = false;
+	for (int i = 0; i < count; i++) {
+		string str = curr->data;
+		size_t found = str.find(findThis);
+		if (found != string::npos) {
+			cout << i + 1 << " " << curr->data << endl;
+			foundOne = true;
+		}
+		curr = curr->next;
+	}
+	if (!foundOne) cout << "not found" << endl;
+}
+
+void LinkedList::Print() {
+	Node* curr = head;
+	for (int i = 1; i <= count; i++) {
+		cout << i << " " << curr->data << endl;
+		curr = curr->next;
+	}
+}
+
+string normalize(string sentence) {
+	string s = sentence;
+	s = s.substr(1, s.size() - 2);
+	return s;
+}
+
+int main() {
+	LinkedList list;
+	string input, option, index, sentence;
+	int indx;
+	while (true) {
+		getline(cin, input);
+		size_t space = input.find_first_of(" ", 0);
+		option = input.substr(0, space);
+		if (option == "insertEnd") {
+			sentence = input.substr(space + 1, input.size() - 1);
+			sentence = normalize(sentence);
+			list.InsertEnd(sentence);
+		}
+		else if (option == "insert") {
+			index = input.substr(space + 1, 1);
+			indx = stoi(index);
+			sentence = input.substr(space + 3, input.size() - 1);
+			sentence = normalize(sentence);
+			list.Insert(indx, sentence);
+		}
+		else if (option == "edit") {
+			index = input.substr(space + 1, 1);
+			indx = stoi(index);
+			sentence = input.substr(space + 3, input.size() - 1);
+			sentence = normalize(sentence);
+			list.Edit(indx, sentence);
+		}
+		else if (option == "delete") {
+			index = input.substr(space + 1, 1);
+			indx = stoi(index);
+			list.Delete(indx);
+		}
+		else if (option == "search") {
+			sentence = input.substr(space + 1, input.size() - 1);
+			sentence = normalize(sentence);
+			list.Search(sentence);
+		}
+		else if (option == "print") {
+			list.Print();
+		}
+		else if (option == "quit") {
+			// Do nothing! The program will exit on its own. :)
+			break;
+		}
+		else {
+			cout << "Error! Invalid input!";
+			break;
+		}
+	}
+	return 0;
+}

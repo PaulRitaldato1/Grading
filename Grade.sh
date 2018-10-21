@@ -3,20 +3,27 @@
 #function definitions will go here
 init(){
   mkdir Zip
-	mkdir Results
+  	cp *.zip Zip
+  mkdir Results
 	     mkdir Results/Sections
   mkdir Canvas
-	mkdir StudentsToGrade
-	mkdir .grader
-	   mkdir .grader/Logs
-	      touch .grader/Logs/runtime_error_log
-	      touch .grader/Logs/compile_log
-	      touch .grader/Logs/test_log
-	      touch .grader/Logs/script_run_log
+  mkdir StudentsToGrade
+  mkdir .grader
+  	mkdir .grader/Logs
+	     touch .grader/Logs/runtime_error_log
+	     touch .grader/Logs/compile_log
+	     touch .grader/Logs/test_log
+	     touch .grader/Logs/script_run_log
 
-     mkdir .grader/History
-        mkdir .grader/History/Zips
-        mkdir .grader/History/Logs
+    mkdir .grader/History
+       mkdir .grader/History/Zips
+       mkdir .grader/History/Logs
+
+   exit 0
+}
+
+clean(){
+	rm -r Zip Results Canvas .grader StudentsToGrade
 }
 
 #declaring flag booleans & variables 
@@ -68,6 +75,10 @@ while test $# -gt 0; do
 			file=$1
 			shift
 			;;
+		-c|--clean)
+			clean
+			exit 0
+			;;
 		*)
 			echo "Invalid command. Try: ./Grade.sh -h or ./Grade.sh --help"
 			exit 0;
@@ -97,7 +108,7 @@ fi
 #Attempting to detect if init() needs to be called
 if $init; then
 	init
-elif ! -d ".grader";  then
+elif [ ! -d ".grader" ];  then
 	echo "Auto-detected that init() has never been run. Running init()"
 	init
 fi
@@ -107,33 +118,48 @@ fi
 #first thangs first, we have to separate all the students files so that each student has a directory with all their files.
 
 #unzip the file then move the zip into history
-unzip /Zip/*.zip -d Canvas
-mv /Zip/*.zip .grader/History/Zips
+unzip Zip/*.zip -d Canvas >/dev/null
+cp Zip/*.zip .grader/History/Zips
 echo "moved the .zip file into .grader/History/Zips"
 
 #create an array with all the files
-filenames=Canvas/*
-
+filenames=(Canvas/*)
+#echo "${filenames[5]}"
 #heres where the magic happens bby
 for ((i=0; i<${#filenames[@]}; ++i)); do
 	offset=0
-	temp=${filenames[$i]%_*}
-	future=${filenames[$offset + $i]%_*}
+	temp="$(basename "$filenames[$i]")"
+	temp=${temp%%_*}
 
-	mkdir StudentsToGrade/$future
+	future=$temp
+	
+	mkdir StudentsToGrade/"$future"
 
 	while [ temp=future ];
 	do
+		mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
 
-		mv $filenames[$offset + $i] StudentsToGrade/$future
-		future=${filenames[$offset + $i]%_*}
 		offset=$((offset + 1))
-	done
+		echo "offset is $offset"
+		future="$(basename "$filenames[$((i + offset))]")"
+		future=${future%%_*}
+		#echo "$(basename filenames[$((i + offset))])"
+		echo "future is $future"
+		echo "temp is $temp"
 
-	i=$((i + $offset))
+		sleep 1
+
+	done
+	i=$((i + offset))
 done
 
+#i=0
+#offset=0
+#for file in Canvas/*; do
+#	temp="$(basename "$file")"
+#	temp=${temp%%_*}
 
+#done
 
 
 

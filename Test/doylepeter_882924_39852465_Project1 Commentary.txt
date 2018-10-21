@@ -1,0 +1,21 @@
+1) Each method is listed below
+
+insertEnd: O(n) - This is because the while loop will only iterate through the list a max of n number of times.
+
+insert: O(n) - This again is because the while loop will only iterate through the list a max of n number of times.
+
+delete: O(n) - Since there is only one for loop, moving the list forward, it will not effect the computational complexity of the problem past n
+
+edit: O(n log(n)) - This is due to the checking of Null pointers that exist within the problem.  By checking is the list has a null pointer in the next element, it adds log(n) to the computational complexity.
+
+print: O(n) - this is because the maximum interation through the list can only be once.  This limits the computational complexity to the n as it doesn't check more than once.
+
+search: O(n^2) - This method's complexity is significantly higher due to the fact that it must check every sub-string of the element, for every element within the list.  This increase in checking 
+
+
+
+
+2) I personally think it is a good idea to use a linked list for this style of data management due to the need to edit the elements.  The positive aspect will allow for the easy addition and removal of nodes in the list or "phrases".  The issue that can arise with utilizing this style of data management, is the possibility to have nodes be forgotten, requiring the machine to mantain that data managament even though the nodes are no longer used.
+
+
+3) I had not previously experimented with linked lists/ node usage within projects.  So this assignment required me to learn a new set of skills/ previous built methods/ build my own methods to solve the tasks at hand. 

@@ -1,0 +1,12 @@
+Q. What is the computational complexity of the methods in the implementation?
+A. The computational complexity of search is 0(n) while insertion and deletion are 0(1).
+
+Q. Your thoughts on the use of linked lists for implementing a line editor.  What are the advantages and disadvantages?
+A. Using a linked list for the line editor was very useful because they can be so dynamic and changing the size is extremely easy as well as efficiently handling the loss or gain of memory
+by allocating and de-allocating as needed. Inserting and deleting items into a linked list is also easier.
+Unfortunately due to the nature of a linked list and nodes the list takes up more space since each node requires additional pointers. The search method is also more complex at O(n).
+
+Q. What did you learn from this assignment and what would you do differently if you had to start over?
+A. For the most part this assignment served to get me back into coding with c++ and understanding how to implement my own linked list. If I could start over I would plan better and
+organize my files better instead of having all my code in one file. This is bad convention and only happened because I had not written in c++ for many months. I also would not have been lazy and
+replaced "bits/stdc++.h" with the actual libraries I had used. Using "bits/stdc++.h" is great for quick coding but bad practice especially when you need to optimize performance.

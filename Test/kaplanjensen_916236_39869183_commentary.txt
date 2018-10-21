@@ -1,0 +1,17 @@
+Complexity:
+insertEnd - O(n)
+print - O(n)
+insert - O(n)
+delete - O(n)
+edit - O(n)
+search - O(n)
+
+I initially did this project using the STL for list then changed it to my own linkedList implementation.
+Using linked lists introduces logic that isn't necessary for the programmer to explicitly implement (the edge cases and keeping track of pointers).
+Linked lists are dynamic so it's good for adding as many lines as you'd like, as compared to an array
+Linked lists can hold whatever data type we wish, rather than an array that can hold only one type
+
+This project was really good practice with linked lists and pointers. It really challenged my inuition of linked lists and forced me to consider all cases.
+I feel very fluent with pointers and linked lists after this.
+
+I don't believe I'd do anything differently. Perhaps I'd have the linkedList also contain a private end node so that I wouldn't have to traverse to find the end node.

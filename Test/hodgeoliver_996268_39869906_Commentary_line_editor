@@ -1,0 +1,12 @@
+Computational complexities:
+
+addNodeEnd: O(1)
+addIndex: O(n)
+deleteNth: O(n)
+edit: O(n)
+search: O(n)
+print: O(n)
+
+Using a linkedlist to implement the editor was efficient. It uses very little time when appending to the end of the list, which is the most commonly used function, and used at most O(n) complexity when doing anything else. It uses less memory than some alternatives, like a hash map. Also, it wasn't necessary to define the size of the list at any point, which allows for dynamic growth. These facts, combined with how easy it is to add to any index of the list, edit the list, delete nodes from the list, and search the list, make linkedlists a good choice for line editors. It would be possible to create a similar program with many other data structures, and I cannot say offhand whether any might be better implementations, but linkedlists are definitely not the worst. I suppose a disadvantage is that to find edit, search for, delete, or add to the middle of the list, it's necessary to iterate through every node before the one you're searching for. With an array, you could go straight to the index you're looking for.
+
+If I had to start over I would spend less time trying to split up the input string than I did. I spent ages trying to figure out the best way to do it and it turns out the simplest way was only about 12 lines of code. I learned a ton about linkedlists, and I learned how important it is to always keep track of the head and tail (I didn't the first few trials and I was very confused by some of the output errors I'd get). I'd also try to make more methods and leave my main method a little less cluttered, which is something I say at the end of every project so I should really start doing that. 

@@ -1,0 +1,13 @@
+Commentary
+
+What is the computational complexity of the methods in the implementation?
+
+    All methods in the List implementation are O(1), while methods like search, edit, insertAt, deleteAt and print in the LineEditor class are O(n).
+
+Your thoughts on the use of linked lists for implementing a line editor.  What are the advantages and disadvantages?
+
+    I think linked lists is a very intuitive way of implementing an editor. It provides an easy way to add lines to the editor, but unfortunately the editing part is not the most efficient. It also provides a good way to not waste memory, although it uses more memory to store its elements.
+
+What did you learn from this assignment and what would you do differently if you had to start over?
+
+    If I had to start over, I’d keep my same implementation of a linked list, but provide more checks in the main and LineEditor implementation to ensure the user doesn’t make mistakes and maybe provide a “How-To” output when they input incorrect commands.

@@ -1,0 +1,25 @@
+Computational Complexity of methods:
+
+insertEnd: O(1), simple insertion
+insertLine: O(n), traverse thru list to insert node at certain place
+deleteLine: O(n), traverse thru list to delete node at certain place
+editLine: O(n^2), traverse once to delete, traverse again to insert, could be faster in retrospect
+print: O(n), traverse thru list
+search: O(n), traverse thru list
+
+The advantage of a linked list are that it is easy and quick to add lines to the end
+of the document, which is an important feature of a line editor. 
+There are some disadvantages, however. Removing/Editing a certain line within your 
+document is only doable in linear time, rather than the constant time it'd take you 
+if you used an array implementation. However, I think adding lines to a document is
+far more common than editing a certain line, so the linked list is the superior
+implementation to use.
+
+I learned a lot about various C++1X specific features that I had not been allowed to
+use in my previous courses, e.g. lambda functions, the auto keyword. I also overbuilt
+the linked list class for the purposes of this assignment, but I learned more about linked list implentation. If I had to start over, I would probably just make a custom linked
+list of strings class with functions that are more specific to the requirements of the
+assignment, so that I wouldn't lose any points. Although I still feel that any linked
+list class should remain general in use, it was difficult implementing some 
+functionality necessary to the project. Not conducive to earning a high grade, but fun
+for learning.

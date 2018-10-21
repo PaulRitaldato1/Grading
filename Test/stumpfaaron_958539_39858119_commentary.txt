@@ -1,0 +1,27 @@
+The computational complexity of 
+
+insertEnd: O(1)
+insert: O(n)
+delete: O(n)
+edit: O(n)
+print: O(n)
+search O(n)
+
+Thoughts on linked lists for implementing a line editor:
+
+Implementing a linked list for a line editor is an appropriate
+implementation of a data structure, because we need a flexible 
+list that can be edited easily. The advantages are that we can add
+essentially an infinite amount of lines and be able to easily edit/
+delete/add in the middle of the list. Disadvantages, however, are that
+once the list starts to get large, due to the O(n) runtime of most methods,
+it will be slow to traverse/edit/delete/insert to the list.
+
+What did I learn/what would I do differently?
+
+One of the things I learned that is valuable to me is practical knowledge and use
+of C++, which I have trying to learn for some time. I also learned how to implement 
+a linked list, but one of the most interesting thigns was that the hardest part was 
+parsing out input from the user. Although I didn't wait quite up until the last minute,
+if I were to start over, I would start earlier, and work more incrementally instead of 
+larger chunks.

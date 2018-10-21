@@ -1,0 +1,251 @@
+#include <iostream>
+#include <string>
+#include <string.h>
+
+
+using namespace std;
+
+struct Node {
+
+    string sentence;
+    Node* next = nullptr;
+
+
+};
+
+Node * head;
+int numOfNodes = 0;
+
+void addNodeToEnd(Node* theEnd){
+
+    Node* currentNode = head;
+    if(numOfNodes == 0){
+        head = theEnd;
+
+    }
+    else{
+
+        for(int i = 1; i < numOfNodes; i++){
+
+            currentNode = currentNode->next;
+
+        }
+
+        currentNode->next = theEnd;
+
+    }
+
+    numOfNodes++;
+
+
+}
+
+
+
+
+
+int main() {
+    string x;
+
+    while(getline(cin, x)){
+
+        if(x.find("insertEnd") != string::npos){
+
+            unsigned long length = x.length() - 12;
+            x = x.substr(11, length);
+
+            Node* newNode = new Node;
+            newNode->sentence = x;
+
+            addNodeToEnd(newNode);
+
+
+        }
+        else if(x.find("print") != string::npos){
+
+            Node* temp = head;
+            int i = 1;
+            cout << i << " " << head->sentence << endl;
+            i++;
+
+            while(temp->next != nullptr){
+
+                temp = temp->next;
+                cout << i << " " << temp->sentence << endl;
+                i++;
+
+            }
+
+        }
+        else if(x.find("search") != string::npos){
+
+            bool found = false;
+
+            x = x.substr(8,x.length() - 9);
+
+            Node* temp = head;
+            int i = 1;
+            while(temp != nullptr){
+
+                if(temp->sentence.find(x) != string::npos){
+
+                 cout << i << " " << temp->sentence << endl;
+                 found = true;
+
+                }
+
+                temp = temp->next;
+
+                i++;
+            }
+
+            if(!found){
+
+                cout << "not found" << endl;
+
+            }
+
+        }
+        else if(x.find("edit") != string::npos){
+
+            x = x.substr(5);
+            string num = "";
+            int i = 0;
+
+            int position = (int) x.find(" ");
+
+            while(i < position){
+
+                num = num + x.substr(i, 1);
+                i++;
+
+            }
+            int newNum = stoi(num);
+
+            i++;
+            x = x.substr(i, x.length() - i + 1);
+            x = x.substr(1, x.length() - 2);
+                i = 1;
+
+
+                Node* currentNode = head;
+
+                while(i < newNum){
+
+                    currentNode = currentNode->next;
+                    i++;
+
+                }
+
+                currentNode->sentence = x;
+
+
+        }
+        else if(x.find("quit") != string::npos){
+
+            exit(0);
+
+        }
+        else if(x.find("delete") != string::npos){
+
+            bool doNothing = false;
+
+            x = x.substr(7);
+            int num = stoi(x);
+            int i = 0;
+            num = num - 1;
+
+            Node* currentNode = head;
+            Node* prevNode = nullptr;
+            while(i < num){
+
+                prevNode = currentNode;
+                currentNode = currentNode->next;
+                if(currentNode == nullptr){
+                    doNothing = true;
+                    break;
+                }
+
+                i++;
+            }
+
+            if(!doNothing){
+                prevNode->next = currentNode->next;
+                delete currentNode;
+
+            }
+
+        }
+        else if(x.find("insert") != string::npos){
+
+            x = x.substr(7);
+            int position = (int) x.find(" ");
+
+            string holder = x.substr(0, position);
+            int num = stoi(holder);
+
+            x = x.substr(position);
+            x = x.substr(2, x.length() - 3);
+            int i = 1;
+            Node * current = head;
+
+            Node* newNode = new Node;
+            newNode->sentence = x;
+
+            if(num == 1){
+               newNode -> next = head;
+               head = newNode;
+
+
+            }
+            else if(numOfNodes + 1 > num || numOfNodes + 1 == num){
+
+                bool end = false;
+                bool screwedUp = false;
+
+                while(i < num -1){
+
+                    if(!end){
+
+                        current = current->next;
+                        if(current == nullptr)
+                            end = true;
+
+                    }
+                    else{
+
+                        screwedUp = true;
+
+
+                    }
+
+
+                    i++;
+                }
+
+                if(!screwedUp){
+
+                    if(!end){
+
+                        newNode->next = current->next;
+                        current->next = newNode;
+
+                    }
+                    else{
+
+                        current->next = newNode;
+                    }
+
+                }
+
+            }
+
+
+        }
+
+
+    }
+
+
+    return 0;
+}

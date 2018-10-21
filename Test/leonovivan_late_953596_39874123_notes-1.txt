@@ -1,0 +1,16 @@
+computational complexity of the methods
+edit- O(n)
+delete - O(n)
+insertEnd - O(1)
+insert - O(n)
+print - O(n) because the number of lines is varied
+main - O(n)? because you dont know how many times the loop will go
+
+I really liked the process, i thought that actually using linked lists is a lot more convinient
+and efficient than arrays. The advantage is definitely the varied amount of space that it needs
+aka if you need more space just add it and the disadvantage is that its really not efficient to do things
+to the middle of the linked list, and thus operations in the middle get a bit convoluted.
+
+After a whole year in programming fundementals 2 and not understanding linked lists and fearing them
+like they were the devil, i actually learned how to implement them and the true efficiency of them when 
+working with stacks where you mainly interact with top and bottom.

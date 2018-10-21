@@ -1,0 +1,31 @@
+Write a commentary where you discuss the following.  Include the commentary as a separate file.
+
+What is the computational complexity of the methods in the implementation?
+
+Your thoughts on the use of linked lists for implementing a line editor.  What are the advantages and disadvantages?
+
+What did you learn from this assignment and what would you do differently if you had to start over?
+
+Commentary:
+1. COMPUTATIONAL COMPLEXITY OF FUNCTIONS
+ListLength() - has a worst case complexity of O(n). This is because at the worst case algorithm searches through every value on the list to return the total number of values of the list.
+
+SearchLines() - has a worst case complexity of O(n). This is because at the worst case, this searches through every line on the list and checks each line for a word. This means that the time it takes to search depends mainly on the number of elements in the list.
+
+DeleteLine() - has a worst case complexity of O(n). This is because at the worst case, the user wants to delete the last line in the list, which would require the function to traverse the entire list in order to reach the end.
+
+EditLine() - has a worst case complexity of O(n). This is because at the worst case, the user wants to edit the last line in the list, which would require the function to traverse the entire list.
+
+InsertEnd() - has a worst case complexity of O(n). This is because for every input, the code has to traverse the entire list to reach the end.
+
+SpecificInsert() - has a worst case complexity of O(n). This is because at the worst case, the user wants to insert a line at the end of the list, which would require the function to traverse the entire list.
+
+PrintAll() - has a worst case complexity of O(n). This is because the function goes through each line to print the users words, which would require the function to go one by one through the entire list.
+
+2. THOUGHTS ON USING LINKED LISTS IN THE LINE EDITER
+I think that using linked lists would be valuable if lines were being removed and added, which would have a need for the program to expand and shrink data. 
+Some of the advantages of using Linked Lists is that: (1) it is efficient to insert lines at the end of the program since it should take O(1) time, (2) it is efficient when removing lines
+However there are also disadvantages to this program such as (1) in order to insert into a specific place, the list has to go from beginning and traverse the list until the position is found and (2) in order to search through the list, the program has to search through the list one value at a time until it either reaches the end of the list or finds the value
+
+3. WHAT I LEARNED FROM THE PROJECT AND WHAT WOULD I DO DIFFERENTLY
+ This project served as a great refresher to programming relying heavily on topics that were taught in prior programming courses. I gained more in depth knowledge with working with linked lists. However, if I were to do this project again, I would not initially try to write my code in the stepik website, this made the process of looking through code slow and once I moved over to Atom the project progressed much more smoothly. Also, I would try to be more consistent with the naming conventions of nodes and iterators in my functions. The final thing I would do differently is make InsertEnd() have a O(1) instead of a O(n).  
