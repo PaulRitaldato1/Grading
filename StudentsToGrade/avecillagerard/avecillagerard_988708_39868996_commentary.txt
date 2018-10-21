@@ -1,0 +1,14 @@
+1. The computational complexity of the methods used in this project is as follows:
+	insertEnd() - O(1), since a pointer to the tail is kept inside the linked list, insertion time at the end is not dependent on the size of the linked list
+	insert() - O(n), the linked list must be iterated through to the insertion point, worst case at end of linked list so entire list (n) has to be iterated through
+	deleteLine() - O(n), same as above
+	edit() - O(n), same as above
+	print() - O(n), same as above
+	search() - O(n), as the constraints described in the project limit the line length to 80 characters, the computational complexity is a max of 80 * n -> O(n) 
+	
+2.	The advantages of linked lists is that insertion can generally be done in constant time, and their size is dynamic compared to arrays.
+	The disadvantages is that iteration is O(n), and since elements other than the head and tail must be iterated to in order to insert them, insertion can be O(n).
+	Linked lists are an acceptable data structure to implement a line editor, but buffers for text before and after the cursor is generally a better way to implement text editors.
+	
+3.	I learned about dealing with memory management with linked lists and how to delete and insert elements in the middle of a linked list. 
+	If I were to do this assignment differently, I would keep a member variable inside my linked list that tracked the size of the linked list to handle requests out of bounds more efficiently.

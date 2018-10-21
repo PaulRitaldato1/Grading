@@ -1,11 +1,12 @@
 #!/bin/bash
 
 #function definitions will go here
+
+#create file structure for t
 init(){
   mkdir Zip
   	cp *.zip Zip
   mkdir Results
-	     mkdir Results/Sections
   mkdir Canvas
   mkdir StudentsToGrade
   mkdir .grader
@@ -18,16 +19,43 @@ init(){
     mkdir .grader/History
        mkdir .grader/History/Zips
        mkdir .grader/History/Logs
-
-   exit 0
+	   mkdir .grader/History/Results
 }
 
 clean(){
 	rm -r Zip Results Canvas .grader StudentsToGrade
 }
 
+progress_bar(){
+	#parameters
+	current=$1
+	max_size=$2
+
+
+}
+
+correct_names(){
+	str=$1
+	char="_"
+	split=$(awk -F"${char}" '{print NF-1}' <<< "${str}")
+	diff=$((split - 3))
+	echo $diff
+	if [ $split -gt 3 ]; then
+		#for ((k=0; k<diff; ++k)); do
+		#	if [ $((k+4)) -lt $split ]; then
+		#		rtn+="$(awk -F_ '{print $((k+4))}' <<< "$str")_"
+		#	else
+		#		rtn+="$(awk -F_ '{print $((k+4))}' <<< "$str")"
+		#	fi
+		#done
+		echo "here"
+	else
+	#echo "here"
+		rtn=$(awk -F_ '{print $((k+4))}' <<< "$str")
+	fi
+}
+
 #declaring flag booleans & variables 
-verbose=false
 init=false
 type_stdio=false
 type_interface=false
@@ -42,7 +70,6 @@ while test $# -gt 0; do
 			echo "The format of this command is simple: ./Grader [FLAGS]"
 			echo "Here are all of the flag options:
 		-i/--init 	*OPTIONAL FLAG* This flag should be set if this is your first time running the script. The script will attempt to auto-detect if init should be used.
-		-v/--verbose 	*OPTIONAL FLAG* Sets verbose mode. In verbose mode, all actions on student files will be outputted to the terminal (including error messages). All operations are stored in the Logs directory, always.
 		-o		Sets the test mode to stdio related tests. This mode will run the student program, feed it inputs, and check the output. This or -a flag are required. Both cannot be set.
 		-a		Sets the test mode to interface based tests.
 		-t		*OPTIONAL FLAG* Script will detect hardware, and attempt use threads to speed up the grading process.
@@ -54,10 +81,6 @@ while test $# -gt 0; do
 			shift
 			;;
 
-		-v|--verbose)
-			verbose=true
-			shift
-			;;
 		-o)
 			type_stdio=true
 			shift
@@ -118,58 +141,57 @@ fi
 #first thangs first, we have to separate all the students files so that each student has a directory with all their files.
 
 #unzip the file then move the zip into history
-unzip Zip/*.zip -d Canvas >/dev/null
+echo "################################################ UNZIP LOG ################################################" >> .grader/Logs/script_run_log
+zipfile=(Zip/*.zip)
+echo "Unzipping "${zipfile[0]}" " | tee .grader/Logs/script_run_log
+unzip "${zipfile[0]}" -d Canvas >.grader/Logs/script_run_log
 cp Zip/*.zip .grader/History/Zips
-echo "moved the .zip file into .grader/History/Zips"
+echo "################################################ END UNZIP LOG ################################################" >> .grader/Logs/script_run_log
+echo "Moved the "${zipfile[0]}" file into .grader/History/Zips"
 #create an array with all the files
 filenames=(Canvas/*)
-echo "${filenames[2]}"
-exit 0
+#echo "${filenames[2]}"
 #heres where the magic happens bby
-for ((i=0; i<${#filenames[@]}; ++i)); do
-	echo $i
+echo "Creating student directories in StudentsToGrade/"
+arr_size=${#filenames[@]}
+for ((i=0; i<$arr_size;)); do
+
 	offset=0
-	temp="$(basename "$filenames[$i]")"
+	temp="$(basename "${filenames[$i]}")"
 	temp=${temp%%_*}
 
 	future=$temp
-	echo $future
-	mkdir StudentsToGrade/"$future"
-
-	while [ $temp == $future ];
+	mkdir StudentsToGrade/"$future" && mkdir Results/"$future"
+	while [[ $temp == $future ]];
 	do
+		rename="$(basename "${filenames[$((i + offset))]}")"
 		mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
+		
+		#this function properly renames the files passed to it
+		correct_names "$rename"
+		echo "$rtn"
+		
 
 		offset=$((offset + 1))
-		echo "offset is $offset"
+
+		#handles the end of the loop, where there is no future
+		outofbounds=$((i+offset))
+		if [ $outofbounds -gt $arr_size ]; then
+			break
+		fi
 
 		future="$(basename "${filenames[$((i+offset))]}")"
 		future=${future%%_*}
-		
-
-		sleep 5
 
 	done
-	i=$((i + offset - 1))
+	if g++ StudentsToGrade/"${temp}"/*.cpp -o StudentsToGrade/"$temp"/"TEST$temp" &>> .grader/Logs/compile_log; then
+		echo -e "$temp's FILE SUCCESSFULLY COMPILED\n" >> .grader/Logs/compile_log
+	else
+		echo -e "$temp's FILE FAILED TO COMPILE\n" >> .grader/Logs/compile_log	
+	fi 
+	i=$((i + offset))
+
+
+
 done
-
-#i=0
-#offset=0
-#for file in Canvas/*; do
-#	temp="$(basename "$file")"
-#	temp=${temp%%_*}
-
-#done
-
-
-
-
-
-
-
-
-
-
-
-
-
+echo "Finished creating student directories."

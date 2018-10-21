@@ -1,0 +1,28 @@
+append():
+O(n)
+
+print():
+O(n)
+
+insert():
+O(n)
+
+edit():
+O(n)
+
+deleteNode():
+O(n)
+
+search():
+O(n)
+
+An advantage of linked lists as a line editor is that the data is stored in a logical order.
+Lines can be inserted without having to reallocate space for the list.
+Deletion of elements in the list do not leave NULL values in the list.
+
+One disadvantage of a linked list is that edit() is more complex than in an array list, where an edit would be O(1).
+
+This assignment taught me the utility of a linked list as a logically-ordered set of data.
+The fact that each data is individually editable and the list is easily expandable is very useful.
+If I were to implement this differently, I would indclude an iterator.
+I would also include more attributes of the list, like tail and length.
