@@ -41,19 +41,38 @@ correct_names(){
 	diff=$((split - 3))
 	echo $diff
 	if [ $split -gt 3 ]; then
-		for ((k=4; k<split; ++k)); do
-			if [ $k -le $split ]; then
-				tmp+="$(awk -v n="$k" -F_ '{print '$k'}' <<< "$str")_"
-				echo "if $2"
+	num=0
+			if [ $((diff>=1)) ]; then
+				tmp+="$(awk -F_ '{print $4}' <<< "$str")_"
+				num=$((num_ + 1))
 			fi
-		done
+			if [ $((diff>=2)) ]; then
+				tmp+="$(awk -F_ '{print $5}' <<< "$str")_"
+				num=$((num_ + 1))
+			fi
+			
+			if [ $((diff>=3)) ]; then
+				tmp+="$(awk -F_ '{print $6}' <<< "$str")_"
+				num=$((num_ + 1))
+			fi
+			if [ $((diff>=4)) ]; then
+				tmp+="$(awk -F_ '{print $7}' <<< "$str")_"
+				num=$((num_ + 1))
+			fi
 		#trim trailing character
-		rtn=${tmp%?}
+		rtn=$tmp
+		echo "num is $num"
+		rtn=$(echo ${rtn} | sed 's/[_]\+$//')
+		#for ((k=0; k<num; k++)); do
+		#	rtn=${rtn%?}
+		#done
 		#echo "here"
 	else
 	#echo "here"
-		rtn=$(awk -F_ '{print $4}' <<< "$str")
+		tmp=$(awk -F_ '{print $4}' <<< "$str")
+		rtn=$tmp
 	fi
+	
 	tmp=''
 	
 }
@@ -171,7 +190,7 @@ for ((i=0; i<$arr_size;)); do
 		mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
 		
 		#this function properly renames the files passed to it
-		correct_names "$rename" "$temp"
+		correct_names "$rename"
 		echo "$rtn"
 		
 
@@ -192,9 +211,7 @@ for ((i=0; i<$arr_size;)); do
 	else
 		echo -e "$temp's FILE FAILED TO COMPILE\n" >> .grader/Logs/compile_log	
 	fi 
-	i=$((i + offset))
-
-
+	i=$((i + offset)) 
 
 done
 echo "Finished creating student directories."
