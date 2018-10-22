@@ -35,46 +35,16 @@ progress_bar(){
 }
 
 correct_names(){
+	shopt -s extglob
 	str=$1
-	char="_"
-	split=$(awk -F"${char}" '{print NF-1}' <<< "${str}")
-	diff=$((split - 3))
-	echo $diff
-	if [ $split -gt 3 ]; then
-	num=0
-			if [ $((diff>=1)) ]; then
-				tmp+="$(awk -F_ '{print $4}' <<< "$str")_"
-				num=$((num_ + 1))
-			fi
-			if [ $((diff>=2)) ]; then
-				tmp+="$(awk -F_ '{print $5}' <<< "$str")_"
-				num=$((num_ + 1))
-			fi
-			
-			if [ $((diff>=3)) ]; then
-				tmp+="$(awk -F_ '{print $6}' <<< "$str")_"
-				num=$((num_ + 1))
-			fi
-			if [ $((diff>=4)) ]; then
-				tmp+="$(awk -F_ '{print $7}' <<< "$str")_"
-				num=$((num_ + 1))
-			fi
-		#trim trailing character
-		rtn=$tmp
-		echo "num is $num"
-		rtn=$(echo ${rtn} | sed 's/[_]\+$//')
-		#for ((k=0; k<num; k++)); do
-		#	rtn=${rtn%?}
-		#done
-		#echo "here"
-	else
-	#echo "here"
-		tmp=$(awk -F_ '{print $4}' <<< "$str")
-		rtn=$tmp
+	late="$(awk -F_ '{print $2}' <<< "${str}")"
+
+	if [[ $late == "late" ]]; then
+			echo "worked"
+			rtn=${str#*_*_*_*_}
+		else
+			rtn=${str#*_*_*_}
 	fi
-	
-	tmp=''
-	
 }
 
 #declaring flag booleans & variables 
@@ -196,22 +166,20 @@ for ((i=0; i<$arr_size;)); do
 
 		offset=$((offset + 1))
 
-		#handles the end of the loop, where there is no future
-		outofbounds=$((i+offset))
-		if [ $outofbounds -gt $arr_size ]; then
-			break
-		fi
-
 		future="$(basename "${filenames[$((i+offset))]}")"
 		future=${future%%_*}
 
 	done
-	if g++ StudentsToGrade/"${temp}"/*.cpp -o StudentsToGrade/"$temp"/"TEST$temp" &>> .grader/Logs/compile_log; then
-		echo -e "$temp's FILE SUCCESSFULLY COMPILED\n" >> .grader/Logs/compile_log
-	else
-		echo -e "$temp's FILE FAILED TO COMPILE\n" >> .grader/Logs/compile_log	
-	fi 
+
 	i=$((i + offset)) 
 
 done
 echo "Finished creating student directories."
+
+#Now compiling will start, this process is separate from the one above so that others can use this (with the -s flag) to just separate student files.
+
+	#if g++ StudentsToGrade/"${temp}"/*.cpp -o StudentsToGrade/"$temp"/"TEST$temp" &>> .grader/Logs/compile_log; then
+	#	echo -e "$temp's FILE SUCCESSFULLY COMPILED\n" >> .grader/Logs/compile_log
+	#else
+	#	echo -e "$temp's FILE FAILED TO COMPILE\n" >> .grader/Logs/compile_log	
+	#fi 
