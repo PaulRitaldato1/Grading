@@ -41,18 +41,21 @@ correct_names(){
 	diff=$((split - 3))
 	echo $diff
 	if [ $split -gt 3 ]; then
-		#for ((k=0; k<diff; ++k)); do
-		#	if [ $((k+4)) -lt $split ]; then
-		#		rtn+="$(awk -F_ '{print $((k+4))}' <<< "$str")_"
-		#	else
-		#		rtn+="$(awk -F_ '{print $((k+4))}' <<< "$str")"
-		#	fi
-		#done
-		echo "here"
+		for ((k=4; k<split; ++k)); do
+			if [ $k -le $split ]; then
+				tmp+="$(awk -v n="$k" -F_ '{print '$k'}' <<< "$str")_"
+				echo "if $2"
+			fi
+		done
+		#trim trailing character
+		rtn=${tmp%?}
+		#echo "here"
 	else
 	#echo "here"
-		rtn=$(awk -F_ '{print $((k+4))}' <<< "$str")
+		rtn=$(awk -F_ '{print $4}' <<< "$str")
 	fi
+	tmp=''
+	
 }
 
 #declaring flag booleans & variables 
@@ -168,7 +171,7 @@ for ((i=0; i<$arr_size;)); do
 		mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
 		
 		#this function properly renames the files passed to it
-		correct_names "$rename"
+		correct_names "$rename" "$temp"
 		echo "$rtn"
 		
 
