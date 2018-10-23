@@ -26,25 +26,37 @@ clean(){
 	rm -r Zip Results Canvas .grader StudentsToGrade
 }
 
-progress_bar(){
-	#parameters
-	current=$1
-	max_size=$2
+
+function Progress_bar {
+# Process data
+    let _progress=(${1}*100/${2}*100)/100
+    let _done=(${_progress}*4)/10
+    let _left=40-$_done
+# Build progressbar string lengths
+    _fill=$(printf "%${_done}s")
+    _empty=$(printf "%${_left}s")
 
 
+printf "\rProgress : [${_fill// /\#}${_empty// /-}] ${_progress}%%"
+
+if [ $1 -eq $2 ]; then
+	printf "\n"
+fi
 }
 
 correct_names(){
 	shopt -s extglob
 	str=$1
 	late="$(awk -F_ '{print $2}' <<< "${str}")"
-
+	exstension=".$(awk -F. '{print $2}' <<< "${str}")"
+	echo $exstension
 	if [[ $late == "late" ]]; then
-			echo "worked"
 			rtn=${str#*_*_*_*_}
 		else
 			rtn=${str#*_*_*_}
 	fi
+
+	rtn=${rtn%-.cpp/.cpp}
 }
 
 #declaring flag booleans & variables 
@@ -124,7 +136,7 @@ fi
 if $init; then
 	init
 elif [ ! -d ".grader" ];  then
-	echo "Auto-detected that init() has never been run. Running init()"
+	echo -e "Auto-detected that init() has never been run. Running init()\n"
 	init
 fi
 
@@ -139,7 +151,8 @@ echo "Unzipping "${zipfile[0]}" " | tee .grader/Logs/script_run_log
 unzip "${zipfile[0]}" -d Canvas >.grader/Logs/script_run_log
 cp Zip/*.zip .grader/History/Zips
 echo "################################################ END UNZIP LOG ################################################" >> .grader/Logs/script_run_log
-echo "Moved the "${zipfile[0]}" file into .grader/History/Zips"
+echo -e "Moved the "${zipfile[0]}" file into .grader/History/Zips\n"
+#exit 0
 #create an array with all the files
 filenames=(Canvas/*)
 #echo "${filenames[2]}"
@@ -156,24 +169,27 @@ for ((i=0; i<$arr_size;)); do
 	mkdir StudentsToGrade/"$future" && mkdir Results/"$future"
 	while [[ $temp == $future ]];
 	do
-		rename="$(basename "${filenames[$((i + offset))]}")"
+
 		mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
-		
+		rename="StudentsToGrade/"$future"/$(basename "${filenames[$((i + offset))]}" )"
+		echo $rename
 		#this function properly renames the files passed to it
 		correct_names "$rename"
-		echo "$rtn"
-		
+		echo $rtn
+		#mv "${filenames[$((i + offset))]}" StudentsToGrade/"$temp"/
 
+		
 		offset=$((offset + 1))
 
 		future="$(basename "${filenames[$((i+offset))]}")"
 		future=${future%%_*}
 
 	done
-
+	#Progress_bar $i $arr_size
 	i=$((i + offset)) 
 
 done
+#Progress_bar $arr_size $arr_size
 echo "Finished creating student directories."
 
 #Now compiling will start, this process is separate from the one above so that others can use this (with the -s flag) to just separate student files.
