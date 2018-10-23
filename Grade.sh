@@ -200,11 +200,14 @@ echo "Creating student directories in StudentsToGrade/"
 fi
 #Now compiling will start, this process is separate from the one above so that others can use this (with the -s flag) to just separate student files.
 threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
-for i in $(seq 0 2 500); do
-	echo "$i"
+for i in $(seq 0 ${threads} ${arr_size}); do
+	for ((t=0; t<threads; ++t)); do
+
+		if g++ StudentsToGrade/"${temp}"/*.cpp -o StudentsToGrade/"$temp"/"TEST$temp" &>> .grader/Logs/compile_log; then
+			echo -e "$temp's FILE SUCCESSFULLY COMPILED\n" >> .grader/Logs/compile_log
+		else
+			echo -e "$temp's FILE FAILED TO COMPILE\n" >> .grader/Logs/compile_log	
+		fi 
+
+	done
 done	
-	#if g++ StudentsToGrade/"${temp}"/*.cpp -o StudentsToGrade/"$temp"/"TEST$temp" &>> .grader/Logs/compile_log; then
-	#	echo -e "$temp's FILE SUCCESSFULLY COMPILED\n" >> .grader/Logs/compile_log
-	#else
-	#	echo -e "$temp's FILE FAILED TO COMPILE\n" >> .grader/Logs/compile_log	
-	#fi 
