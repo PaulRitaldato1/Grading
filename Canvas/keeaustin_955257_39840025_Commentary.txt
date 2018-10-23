@@ -1,5 +1,0 @@
-The computational complexity of each method in the implementation is O(n).  
-
-The advantage of a linked list for a line editor is that it is very flexible; lines can be added to anywhere in the linked list and recursion is easy to implement.  The disadvantages include the inability to efficiently attach line numbers to each entry, the size dependent O(n) time to add to the back of the list, and the relative complexity of having to search the list in order to modify it based on line numbers.  Furthermore, linked lists are not a very efficient data structure because data is stored randomly rather than in sequential order, slowing down access times.
-
-This assignment reminded me that linked lists are often more work than they are worth.  If I had to start over, I would not have wasted time creating a menu function, an insert function that allows insertions at positions greater than the size of the list, and a search function that stops at the first match.  I would have read the Stepik test cases before I wrote the program around the test cases in the Canvas assignment page.
