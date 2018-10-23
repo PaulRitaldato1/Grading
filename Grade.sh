@@ -49,14 +49,15 @@ correct_names(){
 	str=$1
 	late="$(awk -F_ '{print $2}' <<< "${str}")"
 	exstension=".$(awk -F. '{print $2}' <<< "${str}")"
-	echo $exstension
+	#echo $exstension
 	if [[ $late == "late" ]]; then
 			rtn=${str#*_*_*_*_}
 		else
 			rtn=${str#*_*_*_}
 	fi
 
-	rtn=${rtn%-.cpp/.cpp}
+	
+	rtn=$(echo $rtn | sed 's/[-0-9]//g')
 }
 
 #declaring flag booleans & variables 
@@ -157,43 +158,51 @@ echo -e "Moved the "${zipfile[0]}" file into .grader/History/Zips\n"
 filenames=(Canvas/*)
 #echo "${filenames[2]}"
 #heres where the magic happens bby
-echo "Creating student directories in StudentsToGrade/"
+
 arr_size=${#filenames[@]}
-for ((i=0; i<$arr_size;)); do
+test="$(basename "${filenames[$((arr_size - 1))]}")"
 
-	offset=0
-	temp="$(basename "${filenames[$i]}")"
-	temp=${temp%%_*}
+#test if the files are already separated, if they are, skip this part
+if [ -d "StudentsToGrade/$test" ]; then 
+echo "Creating student directories in StudentsToGrade/"
+	for ((i=0; i<$arr_size;)); do
 
-	future=$temp
-	mkdir StudentsToGrade/"$future" && mkdir Results/"$future"
-	while [[ $temp == $future ]];
-	do
+		offset=0
+		temp="$(basename "${filenames[$i]}")"
+		temp=${temp%%_*}
 
-		mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
-		rename="StudentsToGrade/"$future"/$(basename "${filenames[$((i + offset))]}" )"
-		echo $rename
-		#this function properly renames the files passed to it
-		correct_names "$rename"
-		echo $rtn
-		#mv "${filenames[$((i + offset))]}" StudentsToGrade/"$temp"/
+		future=$temp
+		mkdir StudentsToGrade/"$future" && mkdir Results/"$future"
+		while [[ $temp == $future ]];
+		do
 
-		
-		offset=$((offset + 1))
+			mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
+			rename="$(basename "${filenames[$((i + offset))]}")"
+			#echo $rename
+			#this function properly renames the files passed to it
+			correct_names "$rename"
+			#echo $rtn
+			mv StudentsToGrade/"$temp"/"$rename" StudentsToGrade/"$temp"/"$rtn"
 
-		future="$(basename "${filenames[$((i+offset))]}")"
-		future=${future%%_*}
+			
+			offset=$((offset + 1))
+
+			future="$(basename "${filenames[$((i+offset))]}")"
+			future=${future%%_*}
+
+		done
+		Progress_bar $i $arr_size
+		i=$((i + offset)) 
 
 	done
-	#Progress_bar $i $arr_size
-	i=$((i + offset)) 
-
-done
-#Progress_bar $arr_size $arr_size
-echo "Finished creating student directories."
-
+	Progress_bar $arr_size $arr_size
+	echo "Finished creating student directories."
+fi
 #Now compiling will start, this process is separate from the one above so that others can use this (with the -s flag) to just separate student files.
-
+threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
+for i in $(seq 0 2 500); do
+	echo "$i"
+done	
 	#if g++ StudentsToGrade/"${temp}"/*.cpp -o StudentsToGrade/"$temp"/"TEST$temp" &>> .grader/Logs/compile_log; then
 	#	echo -e "$temp's FILE SUCCESSFULLY COMPILED\n" >> .grader/Logs/compile_log
 	#else
