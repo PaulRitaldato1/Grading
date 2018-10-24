@@ -55,16 +55,18 @@ correct_names(){
 		else
 			rtn=${str#*_*_*_}
 	fi
-
-	
-	rtn=$(echo $rtn | sed 's/[-0-9]//g')
+ # rtn=${rtn/%%(-[0-9]).cpp/.cpp}
+  #before="$(awk -F. '{print $1}' <<< "${rtn}")"
+	#rtn=${before%-+([0-9])}
+  #rtnn="$rtn$extension"
+  #echo "$rtn"
 }
 
 #declaring flag booleans & variables 
 init=false
 type_stdio=false
 type_interface=false
-threading=false
+separate=false
 file="tests"
 
 #parse input, grab flags
@@ -77,8 +79,9 @@ while test $# -gt 0; do
 		-i/--init 	*OPTIONAL FLAG* This flag should be set if this is your first time running the script. The script will attempt to auto-detect if init should be used.
 		-o		Sets the test mode to stdio related tests. This mode will run the student program, feed it inputs, and check the output. This or -a flag are required. Both cannot be set.
 		-a		Sets the test mode to interface based tests.
-		-t		*OPTIONAL FLAG* Script will detect hardware, and attempt use threads to speed up the grading process.
-		-f  [FILENAME]	*OPTIONAL FLAG* Specify a test file to use, if not set the script will default to a file named tests."
+		-f  [FILENAME]	*OPTIONAL FLAG* Specify a test file to use, if not set the script will default to a file named tests.
+    -c    Absolutely cleans the  system. Literally deletes everyting. For now it is used for debugging. Later on this will delete everything except log files, which will be zipped up.
+    -s    Just separates student files, do nothing else."
 			exit 0
 			;;
 		-i|--init)
@@ -94,10 +97,6 @@ while test $# -gt 0; do
 			type_interface=true
 			shift
 			;;
-		-t)
-			threading=true
-			shift
-			;;
 		-f)
 			shift
 			file=$1
@@ -107,6 +106,10 @@ while test $# -gt 0; do
 			clean
 			exit 0
 			;;
+    -s)
+        separate=true
+        shift
+        ;;
 		*)
 			echo "Invalid command. Try: ./Grade.sh -h or ./Grade.sh --help"
 			exit 0;
@@ -147,67 +150,105 @@ fi
 
 #unzip the file then move the zip into history
 echo "################################################ UNZIP LOG ################################################" >> .grader/Logs/script_run_log
+
+#Take all zipfiles in the Zip directory (There should only be one but this prevents a crash if there is more than one)
 zipfile=(Zip/*.zip)
+
+#only use the first zipfile in the directory
 echo "Unzipping "${zipfile[0]}" " | tee .grader/Logs/script_run_log
 unzip "${zipfile[0]}" -d Canvas >.grader/Logs/script_run_log
+
+#for now this is a copy, for testing purposes. Final release will be a mv command
 cp Zip/*.zip .grader/History/Zips
 echo "################################################ END UNZIP LOG ################################################" >> .grader/Logs/script_run_log
 echo -e "Moved the "${zipfile[0]}" file into .grader/History/Zips\n"
-#exit 0
+
+
 #create an array with all the files
 filenames=(Canvas/*)
-#echo "${filenames[2]}"
+
 #heres where the magic happens bby
 
+#effectively the number of student files NOT the number of students
 arr_size=${#filenames[@]}
+
+#this is set to the last possible directory name that will be created by these loops. If it exists then this has already been run, so skip it.
 test="$(basename "${filenames[$((arr_size - 1))]}")"
 
 #test if the files are already separated, if they are, skip this part
-if [ -d "StudentsToGrade/$test" ]; then 
-echo "Creating student directories in StudentsToGrade/"
-	for ((i=0; i<$arr_size;)); do
+if [ ! -d "StudentsToGrade/$test" ]; then 
+    echo "Creating student directories in StudentsToGrade/"
+	  for ((i=0; i<$arr_size;)); do
 
-		offset=0
-		temp="$(basename "${filenames[$i]}")"
-		temp=${temp%%_*}
+		    offset=0
+		    temp="$(basename "${filenames[$i]}")"
+		    temp=${temp%%_*}
 
-		future=$temp
-		mkdir StudentsToGrade/"$future" && mkdir Results/"$future"
-		while [[ $temp == $future ]];
-		do
+		    future=$temp
+		    mkdir StudentsToGrade/"$future" && mkdir Results/"$future"
+		    while [[ $temp == $future ]];
+		    do
 
-			mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
-			rename="$(basename "${filenames[$((i + offset))]}")"
-			#echo $rename
-			#this function properly renames the files passed to it
-			correct_names "$rename"
-			#echo $rtn
-			mv StudentsToGrade/"$temp"/"$rename" StudentsToGrade/"$temp"/"$rtn"
+			      mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
+			      rename="$(basename "${filenames[$((i + offset))]}")"
 
-			
-			offset=$((offset + 1))
+			      #this function properly renames the files passed to it
+			      correct_names "$rename"
+			      mv StudentsToGrade/"$temp"/"$rename" StudentsToGrade/"$temp"/"$rtn"
 
-			future="$(basename "${filenames[$((i+offset))]}")"
-			future=${future%%_*}
+			      offset=$((offset + 1))
 
-		done
-		Progress_bar $i $arr_size
-		i=$((i + offset)) 
+			      future="$(basename "${filenames[$((i+offset))]}")"
+			      future=${future%%_*}
 
-	done
-	Progress_bar $arr_size $arr_size
+		    done
+		    Progress_bar $i $arr_size
+		    i=$((i + offset)) 
+
+	  done
+	  Progress_bar $arr_size $arr_size
+
 	echo "Finished creating student directories."
+
+else
+    echo -e "Student files have already been separated, skipping this process.\n"
 fi
-#Now compiling will start, this process is separate from the one above so that others can use this (with the -s flag) to just separate student files.
+
+#if you just wanted to separate student files, script ends here
+if $separate; then
+    echo -e "Student files have been separated, exiting..."
+    exit 0
+fi
+
+
+#Now compiling will start, this process is separate from the one above so that others can use this script(with the -s flag) to just separate student files and not compile/test.
+
+dirs=(StudentsToGrade/*)
+dir_size=${#dirs[@]}
+
 threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
-for i in $(seq 0 ${threads} ${arr_size}); do
-	for ((t=0; t<threads; ++t)); do
 
-		if g++ StudentsToGrade/"${temp}"/*.cpp -o StudentsToGrade/"$temp"/"TEST$temp" &>> .grader/Logs/compile_log; then
-			echo -e "$temp's FILE SUCCESSFULLY COMPILED\n" >> .grader/Logs/compile_log
-		else
-			echo -e "$temp's FILE FAILED TO COMPILE\n" >> .grader/Logs/compile_log	
-		fi 
+echo -e "\nStarting compilation..."
+echo "Detected $threads threads on your CPU, finna use em all"
+for base in $(seq 0 ${threads} ${dir_size}); do
+	  for ((t=0; t<threads; ++t)); do
 
+        #since the number of student files to be compiled is probably not evenly divied by your number of cores/threads, this breaks when everything is compiled
+        if [ $((base+t)) -gt $dir_size ]; then
+            break
+        fi
+
+        Progress_bar $((base + t)) $dir_size
+        stu_dir="$(basename "${dirs[$((base + t))]}")"
+        #start compiling everyones stuff. The & at the end of the command backgrounds the process. This allows multiple processes to be run in parallel. Ghetto threading yall!
+		    g++ StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST$stu_dir" &>> .grader/Logs/compile_log &
+
+        # $! gets the pid of the last backgrounded process, this will be used to wait for all processes to finish (the number of processes running at a time will be the number of threads your CPU has)
+        pids="$pids $!"
 	done
-done	
+
+ #literally crashed my OS because i forgot to wait for the batch of processes to finish and i had like 700 compiler jobs running. Not the best way to parallelize but I didnt want to spend a ton of time of this. Fix it if you want.
+ wait $pids
+
+done
+echo -e "Finished compiling. All errors, and general compiler output found in .grader/Logs/compile_log\n"
