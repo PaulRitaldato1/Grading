@@ -227,7 +227,8 @@ dirs=(StudentsToGrade/*)
 dir_size=${#dirs[@]}
 
 threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
-
+let n_procs= (($threads + .5) + $threads)
+echo $n_procs
 echo -e "\nStarting compilation..."
 echo "Detected $threads threads on your CPU, finna use em all"
 for base in $(seq 0 ${threads} ${dir_size}); do
