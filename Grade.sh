@@ -227,9 +227,9 @@ dirs=(StudentsToGrade/*)
 dir_size=${#dirs[@]}
 
 threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
-let n_procs=$((threads + (threads/2)))
 echo -e "\nStarting compilation..."
-echo "Detected $threads threads on your CPU, finna use em all. Spawning $n_procs processes"
+echo "Detected $threads threads on your CPU, finna use em all."
+
 for base in $(seq 0 ${threads} ${dir_size}); do
 	  for ((t=0; t<threads; ++t)); do
 
@@ -257,3 +257,4 @@ for base in $(seq 0 ${threads} ${dir_size}); do
 done
 echo -e "Finished compiling. All errors, and general compiler output found in .grader/Logs/compile_log\n"
 
+clean
