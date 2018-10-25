@@ -227,10 +227,9 @@ dirs=(StudentsToGrade/*)
 dir_size=${#dirs[@]}
 
 threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
-let n_procs= (($threads + .5) + $threads)
-echo $n_procs
+let n_procs=$((threads + (threads/2)))
 echo -e "\nStarting compilation..."
-echo "Detected $threads threads on your CPU, finna use em all"
+echo "Detected $threads threads on your CPU, finna use em all. Spawning $n_procs processes"
 for base in $(seq 0 ${threads} ${dir_size}); do
 	  for ((t=0; t<threads; ++t)); do
 
@@ -242,8 +241,12 @@ for base in $(seq 0 ${threads} ${dir_size}); do
         Progress_bar $((base + t)) $dir_size
         stu_dir="$(basename "${dirs[$((base + t))]}")"
         #start compiling everyones stuff. The & at the end of the command backgrounds the process. This allows multiple processes to be run in parallel. Ghetto threading yall!
-		    g++ StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST$stu_dir" &>> .grader/Logs/compile_log &
+		    g++ StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST$stu_dir"  &>> .grader/Logs/compile_log &
 
+        if [ $? != 0 ]; then
+            echo "$stu_dir failed to compile" >> StudentsToGrade/"$stu_dir"/compile_fail.txt
+        fi
+        echo "$stu_dir" >> .grader/Logs/compile_log
         # $! gets the pid of the last backgrounded process, this will be used to wait for all processes to finish (the number of processes running at a time will be the number of threads your CPU has)
         pids="$pids $!"
 	done
@@ -253,3 +256,4 @@ for base in $(seq 0 ${threads} ${dir_size}); do
 
 done
 echo -e "Finished compiling. All errors, and general compiler output found in .grader/Logs/compile_log\n"
+
