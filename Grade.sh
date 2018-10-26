@@ -55,7 +55,8 @@ correct_names(){
 		else
 			rtn=${str#*_*_*_}
 	fi
- # rtn=${rtn/%%(-[0-9]).cpp/.cpp}
+ rtn=${rtn/%-+([0-9])%extension/extension}
+ echo $rtn
   #before="$(awk -F. '{print $1}' <<< "${rtn}")"
 	#rtn=${before%-+([0-9])}
   #rtnn="$rtn$extension"
@@ -64,9 +65,7 @@ correct_names(){
 
 #declaring flag booleans & variables 
 init=false
-type_stdio=false
-type_interface=false
-separate=false
+separate=3
 file="tests"
 
 #parse input, grab flags
@@ -76,25 +75,14 @@ while test $# -gt 0; do
 			echo "Welcome to the Grader script!"
 			echo "The format of this command is simple: ./Grader [FLAGS]"
 			echo "Here are all of the flag options:
-		-i/--init 	*OPTIONAL FLAG* This flag should be set if this is your first time running the script. The script will attempt to auto-detect if init should be used.
-		-o		Sets the test mode to stdio related tests. This mode will run the student program, feed it inputs, and check the output. This or -a flag are required. Both cannot be set.
-		-a		Sets the test mode to interface based tests.
-		-f  [FILENAME]	*OPTIONAL FLAG* Specify a test file to use, if not set the script will default to a file named tests.
-    -c    Absolutely cleans the  system. Literally deletes everyting. For now it is used for debugging. Later on this will delete everything except log files, which will be zipped up.
-    -s    Just separates student files, do nothing else."
+	-i/--init 	*OPTIONAL FLAG* This flag should be set if this is your first time running the script. The script will attempt to auto-detect if init should be used.
+	-f  [FILENAME]	*OPTIONAL FLAG* Specify a test file to use, if not set the script will default to a file named tests.
+    -Rsc    Absolutely cleans the  system. Literally deletes everyting. For now it is used for debugging. Later on this will delete everything except log files, which will be zipped up.
+    -s  [STAGE_NUM]  Choose up to what stage you want the script to run to. The stages are as follows: 1. Separate and rename files, 2. Compile, 3. Test"
 			exit 0
 			;;
 		-i|--init)
 			init=true
-			shift
-			;;
-
-		-o)
-			type_stdio=true
-			shift
-			;;
-		-a)
-			type_interface=true
 			shift
 			;;
 		-f)
@@ -102,14 +90,19 @@ while test $# -gt 0; do
 			file=$1
 			shift
 			;;
-		-c|--clean)
+		-Rsc)
 			clean
 			exit 0
 			;;
-    -s)
-        separate=true
-        shift
-        ;;
+		-s)
+			shift
+			if [ $1 -gt 3 ] || [ $1 -lt 0 ]; then
+				echo -e "Choose a valid value please\n"
+				exit 0
+			fi
+			separate=$1
+			shift
+			;;
 		*)
 			echo "Invalid command. Try: ./Grade.sh -h or ./Grade.sh --help"
 			exit 0;
@@ -130,9 +123,9 @@ if ! which unzip >/dev/null; then
 	  exit 1
 
 fi
-#Make sure there is only 1 grading type
-if $type_stdio && $type_interface; then
-	echo "Cannot have -o and -a flags BOTH set. Exiting."
+
+if ! which expect >/dev/null; then
+	echo "Could not find expect. This is used to test student files, please install it and try again"
 	exit 1
 fi
 
@@ -160,8 +153,8 @@ unzip "${zipfile[0]}" -d Canvas >.grader/Logs/script_run_log
 
 #for now this is a copy, for testing purposes. Final release will be a mv command
 cp Zip/*.zip .grader/History/Zips
-echo "################################################ END UNZIP LOG ################################################" >> .grader/Logs/script_run_log
-echo -e "Moved the "${zipfile[0]}" file into .grader/History/Zips\n"
+echo "################################################ END UNZIP LOG ################################################" >> .grader/Logs/script_run_log 
+echo -e "Moved the "${zipfile[0]}" file into .grader/History/Zips\n" | tee .grader/Logs/script_run_log
 
 
 #create an array with all the files
@@ -214,15 +207,7 @@ else
     echo -e "Student files have already been separated, skipping this process.\n"
 fi
 
-#if you just wanted to separate student files, script ends here
-if $separate; then
-    echo -e "Student files have been separated, exiting..."
-    exit 0
-fi
-
-
 #Now compiling will start, this process is separate from the one above so that others can use this script(with the -s flag) to just separate student files and not compile/test.
-
 dirs=(StudentsToGrade/*)
 dir_size=${#dirs[@]}
 
@@ -257,4 +242,4 @@ for base in $(seq 0 ${threads} ${dir_size}); do
 done
 echo -e "Finished compiling. All errors, and general compiler output found in .grader/Logs/compile_log\n"
 
-clean
+#clean
