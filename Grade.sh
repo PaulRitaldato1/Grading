@@ -49,7 +49,6 @@ correct_names(){
 	str=$1
 	late="$(awk -F_ '{print $2}' <<< "${str}")"
 	exstension=".$(awk -F. '{print $2}' <<< "${str}")"
-	#echo $exstension
 	if [[ $late == "late" ]]; then
 			rtn=${str#*_*_*_*_}
 		else
@@ -124,7 +123,7 @@ if ! which unzip >/dev/null; then
 
 fi
 
-if ! which expect >/dev/null; then
+if ! which expect &>/dev/null; then
 	echo "Could not find expect. This is used to test student files, please install it and try again"
 	exit 1
 fi
@@ -167,9 +166,10 @@ arr_size=${#filenames[@]}
 
 #this is set to the last possible directory name that will be created by these loops. If it exists then this has already been run, so skip it.
 test="$(basename "${filenames[$((arr_size - 1))]}")"
+test=${test%%_*}
 
 #test if the files are already separated, if they are, skip this part
-if [ ! -d "StudentsToGrade/$test" ]; then 
+if [ ! -d "StudentsToGrade/$test" ] && [ $separate -ge 1 ]; then
     echo "Creating student directories in StudentsToGrade/"
 	  for ((i=0; i<$arr_size;)); do
 
@@ -207,39 +207,45 @@ else
     echo -e "Student files have already been separated, skipping this process.\n"
 fi
 
-#Now compiling will start, this process is separate from the one above so that others can use this script(with the -s flag) to just separate student files and not compile/test.
-dirs=(StudentsToGrade/*)
-dir_size=${#dirs[@]}
 
-threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
-echo -e "\nStarting compilation..."
-echo "Detected $threads threads on your CPU, finna use em all."
+if [ $separate -ge 2 ]; then
+    #Now compiling will start, this process is separate from the one above so that others can use this script(with the -s flag) to just separate student files and not compile/test.
+    dirs=(StudentsToGrade/*)
+    dir_size=${#dirs[@]}
 
-for base in $(seq 0 ${threads} ${dir_size}); do
-	  for ((t=0; t<threads; ++t)); do
+    threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
+    echo -e "\nStarting compilation..."
+    echo "Detected $threads threads on your CPU, finna use em all."
 
-        #since the number of student files to be compiled is probably not evenly divied by your number of cores/threads, this breaks when everything is compiled
-        if [ $((base+t)) -gt $dir_size ]; then
-            break
-        fi
+    for base in $(seq 0 ${threads} ${dir_size}); do
+	      for ((t=0; t<threads; ++t)); do
 
-        Progress_bar $((base + t)) $dir_size
-        stu_dir="$(basename "${dirs[$((base + t))]}")"
-        #start compiling everyones stuff. The & at the end of the command backgrounds the process. This allows multiple processes to be run in parallel. Ghetto threading yall!
-		    g++ StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST$stu_dir"  &>> .grader/Logs/compile_log &
+            #since the number of student files to be compiled is probably not evenly divied by your number of cores/threads, this breaks when everything is compiled
+            if [ $((base+t)) -gt $dir_size ]; then
+                break
+            fi
 
-        if [ $? != 0 ]; then
-            echo "$stu_dir failed to compile" >> StudentsToGrade/"$stu_dir"/compile_fail.txt
-        fi
-        echo "$stu_dir" >> .grader/Logs/compile_log
-        # $! gets the pid of the last backgrounded process, this will be used to wait for all processes to finish (the number of processes running at a time will be the number of threads your CPU has)
-        pids="$pids $!"
-	done
+            Progress_bar $((base + t)) $dir_size
+            stu_dir="$(basename "${dirs[$((base + t))]}")"
+            #start compiling everyones stuff. The & at the end of the command backgrounds the process. This allows multiple processes to be run in parallel. Ghetto threading yall!
+		        g++ StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST$stu_dir"  &>> .grader/Logs/compile_log &
 
- #literally crashed my OS because i forgot to wait for the batch of processes to finish and i had like 700 compiler jobs running. Not the best way to parallelize but I didnt want to spend a ton of time of this. Fix it if you want.
- wait $pids
+            if [ $? != 0 ]; then
+                echo "$stu_dir failed to compile" >> StudentsToGrade/"$stu_dir"/compile_fail.txt
+            fi
+            echo "$stu_dir" >> .grader/Logs/compile_log
+            # $! gets the pid of the last backgrounded process, this will be used to wait for all processes to finish (the number of processes running at a time will be the number of threads your CPU has)
+            pids="$pids $!"
+	      done
 
-done
-echo -e "Finished compiling. All errors, and general compiler output found in .grader/Logs/compile_log\n"
+        #literally crashed my OS because i forgot to wait for the batch of processes to finish and i had like 700 compiler jobs running. Not the best way to parallelize but I didnt want to spend a ton of time of this. Fix it if you want.
+        wait $pids
 
+    done
+    echo -e "Finished compiling. All errors, and general compiler output found in .grader/Logs/compile_log\n"
+fi
+
+if [ $separate -ge 3 ]; then
+   echo "made it here" 
+fi
 #clean
