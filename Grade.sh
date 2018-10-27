@@ -48,18 +48,17 @@ correct_names(){
 	shopt -s extglob
 	str=$1
 	late="$(awk -F_ '{print $2}' <<< "${str}")"
-	exstension=".$(awk -F. '{print $2}' <<< "${str}")"
+
 	if [[ $late == "late" ]]; then
 			rtn=${str#*_*_*_*_}
 		else
 			rtn=${str#*_*_*_}
 	fi
- rtn=${rtn/%-+([0-9])%extension/extension}
- echo $rtn
-  #before="$(awk -F. '{print $1}' <<< "${rtn}")"
-	#rtn=${before%-+([0-9])}
-  #rtnn="$rtn$extension"
-  #echo "$rtn"
+
+	extension=".${rtn##*.}"
+  	rtn="${rtn%.*}"
+  	rtn=${rtn/%-+([0-9])}
+	rtn="$rtn$extension"
 }
 
 #declaring flag booleans & variables 
@@ -245,7 +244,7 @@ if [ $separate -ge 2 ]; then
     echo -e "Finished compiling. All errors, and general compiler output found in .grader/Logs/compile_log\n"
 fi
 
-if [ $separate -ge 3 ]; then
-   echo "made it here" 
+if [ $separate -eq 3 ]; then
+	echo "testing files goes here"
 fi
 #clean
