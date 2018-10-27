@@ -2,10 +2,10 @@
 
 #function definitions will go here
 
-#create file structure for t
+#create file structure for grading
 init(){
   mkdir Zip
-  	cp *.zip Zip
+  	mv *.zip Zip
   mkdir Results
   mkdir Canvas
   mkdir StudentsToGrade
@@ -26,8 +26,7 @@ clean(){
 	rm -r Zip Results Canvas .grader StudentsToGrade
 }
 
-
-function Progress_bar {
+Progress_bar() {
 # Process data
     let _progress=(${1}*100/${2}*100)/100
     let _done=(${_progress}*4)/10
@@ -39,26 +38,39 @@ function Progress_bar {
 
 printf "\rProgress : [${_fill// /\#}${_empty// /-}] ${_progress}%%"
 
+#newline after bar reaches 100%
 if [ $1 -eq $2 ]; then
 	printf "\n"
 fi
 }
 
 correct_names(){
-	shopt -s extglob
-	str=$1
-	late="$(awk -F_ '{print $2}' <<< "${str}")"
+  #pattern matching in bash
+	  shopt -s extglob
 
-	if [[ $late == "late" ]]; then
-			rtn=${str#*_*_*_*_}
+    #see if the assignment was marked as late
+	  late="$(awk -F_ '{print $2}' <<< "${1}")"
+
+    #if the assignment was late then the pattern match needs to account for an extra underscore
+    #After this if/else rtn will be the original file name, unless it was a resubmit in which it will be in a form like this: filename-1.cpp. That -1 needs to be cut off
+	  if [[ $late == "late" ]]; then
+			  rtn=${1#*_*_*_*_}
 		else
-			rtn=${str#*_*_*_}
-	fi
+			  rtn=${1#*_*_*_}
+	  fi
 
-	extension=".${rtn##*.}"
-  	rtn="${rtn%.*}"
-  	rtn=${rtn/%-+([0-9])}
-	rtn="$rtn$extension"
+    #get the extension of the file for later use
+	  extension=".${rtn##*.}"
+
+    #rtn will now be everything before the . so filename-1.cpp -> filename-1
+    rtn="${rtn%.*}"
+
+    #cut off any combination of -#
+    #this might not work on double digit resubmits. Havent tested it but it should be fine unless some student is REALLY extra
+    rtn=${rtn/%-+([0-9])}
+
+    #tack on the file extension again
+	  rtn="$rtn$extension"
 }
 
 #declaring flag booleans & variables 
@@ -96,7 +108,7 @@ while test $# -gt 0; do
 			shift
 			if [ $1 -gt 3 ] || [ $1 -lt 0 ]; then
 				echo -e "Choose a valid value please\n"
-				exit 0
+				exit 1
 			fi
 			separate=$1
 			shift
@@ -122,11 +134,6 @@ if ! which unzip >/dev/null; then
 
 fi
 
-if ! which expect &>/dev/null; then
-	echo "Could not find expect. This is used to test student files, please install it and try again"
-	exit 1
-fi
-
 #Attempting to detect if init() needs to be called
 if $init; then
 	init
@@ -147,14 +154,16 @@ zipfile=(Zip/*.zip)
 
 #only use the first zipfile in the directory
 echo "Unzipping "${zipfile[0]}" " | tee .grader/Logs/script_run_log
-unzip "${zipfile[0]}" -d Canvas >.grader/Logs/script_run_log
+if ! unzip "${zipfile[0]}" -d Canvas >.grader/Logs/script_run_log; then
+    exit 1
+fi
 
 #for now this is a copy, for testing purposes. Final release will be a mv command
-cp Zip/*.zip .grader/History/Zips
+mv Zip/*.zip .grader/History/Zips
 echo "################################################ END UNZIP LOG ################################################" >> .grader/Logs/script_run_log 
 echo -e "Moved the "${zipfile[0]}" file into .grader/History/Zips\n" | tee .grader/Logs/script_run_log
 
-
+######################################################## Stage 1: Separating and Renaming ########################################################
 #create an array with all the files
 filenames=(Canvas/*)
 
@@ -172,30 +181,51 @@ if [ ! -d "StudentsToGrade/$test" ] && [ $separate -ge 1 ]; then
     echo "Creating student directories in StudentsToGrade/"
 	  for ((i=0; i<$arr_size;)); do
 
+        #logic might be hard to follow in these loops so heres the rundown
+        #Outer loop: gets the first file belonging to one student. The outer loop should run once for every student NOT for every file
+        #Inner loop: moves all files with the name found in the outer loop
+
+        #the offset will be used to update the iterator for the outer loop, it will represent how many files belong to a single student
 		    offset=0
+
+        #basename removes the path from a given filename in the filenames array.
 		    temp="$(basename "${filenames[$i]}")"
+        #cuts off everything after the first _ which just leaves the students name in temp
 		    temp=${temp%%_*}
 
+        #future is used to "look in the future" and find all files belonging to a single student
 		    future=$temp
-		    mkdir StudentsToGrade/"$future" && mkdir Results/"$future"
+
+        #make a directory for every student
+		    mkdir StudentsToGrade/"$future"
+
+        #find all files that belong to a single student
 		    while [[ $temp == $future ]];
 		    do
 
+            #move the ugly canvas file into the students directory
 			      mv "${filenames[$((i + offset))]}" StudentsToGrade/"$future"
+
+            #get the students filename, probably couldve reused some variable but meh, making one is more clear on my intent
 			      rename="$(basename "${filenames[$((i + offset))]}")"
 
-			      #this function properly renames the files passed to it
+			      #this function properly renames the files to there original name reversing the mess canvas does to filenames. Returns the corrected filename in the rtn variable.
 			      correct_names "$rename"
 			      mv StudentsToGrade/"$temp"/"$rename" StudentsToGrade/"$temp"/"$rtn"
 
+            #increment offset for every file found with same students name
 			      offset=$((offset + 1))
 
+            #update future to be the next file in the directory
 			      future="$(basename "${filenames[$((i+offset))]}")"
 			      future=${future%%_*}
 
 		    done
+        #yay for progress bar animations partially found online
 		    Progress_bar $i $arr_size
-		    i=$((i + offset)) 
+
+        #make outer loop skip over what the inner loop did
+		    i=$((i + offset))
 
 	  done
 	  Progress_bar $arr_size $arr_size
@@ -207,15 +237,25 @@ else
 fi
 
 
+
+######################################################## Stage 2: Compiling ########################################################
+
+
 if [ $separate -ge 2 ]; then
+
     #Now compiling will start, this process is separate from the one above so that others can use this script(with the -s flag) to just separate student files and not compile/test.
     dirs=(StudentsToGrade/*)
     dir_size=${#dirs[@]}
 
+    #get number of threads your cpu has
     threads=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
     echo -e "\nStarting compilation..."
     echo "Detected $threads threads on your CPU, finna use em all."
 
+    #another nexted loop
+    #Since now we know what step sizes will be made (number of threads) the seq command can be used. It increments in steps of size $threads up until $dir_size
+    #Outer loop: Move the compiling batch in steps of $threads through all student directories
+    #Inner loop: Create the actualy threads
     for base in $(seq 0 ${threads} ${dir_size}); do
 	      for ((t=0; t<threads; ++t)); do
 
@@ -233,6 +273,7 @@ if [ $separate -ge 2 ]; then
                 echo "$stu_dir failed to compile" >> StudentsToGrade/"$stu_dir"/compile_fail.txt
             fi
             echo "$stu_dir" >> .grader/Logs/compile_log
+
             # $! gets the pid of the last backgrounded process, this will be used to wait for all processes to finish (the number of processes running at a time will be the number of threads your CPU has)
             pids="$pids $!"
 	      done
@@ -244,7 +285,8 @@ if [ $separate -ge 2 ]; then
     echo -e "Finished compiling. All errors, and general compiler output found in .grader/Logs/compile_log\n"
 fi
 
+######################################################## Stage 3: Testing and Reporting ########################################################
 if [ $separate -eq 3 ]; then
-	echo "testing files goes here"
+	echo "testing methodology goes here"
 fi
 #clean
