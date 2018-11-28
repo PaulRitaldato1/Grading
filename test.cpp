@@ -1,14 +1,18 @@
 #include<iostream>
-
+#include<string>
 
 int main(){
-	int x = 5;
-	int y;
-	std::cout <<  x;
-	std::cin >> y;
+	int i1, i2;
+	std::string s1, s2;
 
-	if(y==5)
-		std::cout << "Ayy bby it worked" << std::endl;
-	else
-		std::cout << "aint work" << std::endl;	
+	std::cin >> i1;
+	std::cin >> i2;
+
+	std::cin >> s1;
+	std::cin >> s2;
+
+	std::cout << "Total inputs: " << i1 << "\nIterations: " << i2 << std::endl;
+	std::cout << s1 << "--->" << s2 << std::endl;
+
+	return 0;
 }
