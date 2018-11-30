@@ -2,11 +2,12 @@
 
 #function definitions will go here
 
-#create file structure for grading
+#create directory/file structure for grading
 init(){
   mkdir Zip
   	mv *.zip Zip
   mkdir Results
+#	touch Results/results.csv
   mkdir Canvas
   mkdir StudentsToGrade
   mkdir .grader
@@ -52,7 +53,8 @@ correct_names(){
 	  late="$(awk -F_ '{print $2}' <<< "${1}")"
 
     #if the assignment was late then the pattern match needs to account for an extra underscore
-    #After this if/else rtn will be the original file name, unless it was a resubmit in which it will be in a form like this: filename-1.cpp. That -1 needs to be cut off
+    #After this if/else rtn will be the original file name (before canvas nonesense), unless it was a resubmit in which it will be in a form like this: filename-1.cpp. 
+	#That -1 needs to be cut off
 	  if [[ $late == "late" ]]; then
 			  rtn=${1#*_*_*_*_}
 		else
@@ -60,7 +62,7 @@ correct_names(){
 	  fi
 
     #get the extension of the file for later use
-	  extension=".${rtn##*.}"
+	extension=".${rtn##*.}"
 
     #rtn will now be everything before the . so filename-1.cpp -> filename-1
     rtn="${rtn%.*}"
@@ -70,13 +72,13 @@ correct_names(){
     rtn=${rtn/%-+([0-9])}
 
     #tack on the file extension again
-	  rtn="$rtn$extension"
+	rtn="$rtn$extension"
 }
 
 #declaring flag booleans & variables 
 init=false
 separate=3
-file="tests"
+t_file="test.sh"
 
 #parse input, grab flags
 while test $# -gt 0; do
@@ -97,7 +99,7 @@ while test $# -gt 0; do
 			;;
 		-f)
 			shift
-			file=$1
+			t_file=$1
 			shift
 			;;
 		-Rsc)
@@ -179,11 +181,14 @@ test=${test%%_*}
 #test if the files are already separated, if they are, skip this part
 if [ ! -d "StudentsToGrade/$test" ] && [ $separate -ge 1 ]; then
     echo "Creating student directories in StudentsToGrade/"
+
+	#I cannot use 'seq' because students may have turned in different numbers of files, making the step sizes variable. Instead 'i' will be changed
+	#to each individual students step size. This is done with the inner loop
 	  for ((i=0; i<$arr_size;)); do
 
         #logic might be hard to follow in these loops so heres the rundown
         #Outer loop: gets the first file belonging to one student. The outer loop should run once for every student NOT for every file
-        #Inner loop: moves all files with the name found in the outer loop
+        #Inner loop: moves all files with the name found in the outer loop. Runs for every file belonging to ONE student, then updates a step size
 
         #the offset will be used to update the iterator for the outer loop, it will represent how many files belong to a single student
 		    offset=0
@@ -198,6 +203,9 @@ if [ ! -d "StudentsToGrade/$test" ] && [ $separate -ge 1 ]; then
 
         #make a directory for every student
 		    mkdir StudentsToGrade/"$future"
+
+			#many ways i could have implemented the actual test script but this was just easiest. Not efficient at all. Later ill change this so it doesnt need to be copied at all
+			cp $t_file StudentsToGrade/"$future"/
 
         #find all files that belong to a single student
 		    while [[ $temp == $future ]];
@@ -252,7 +260,7 @@ if [ $separate -ge 2 ]; then
     echo -e "\nStarting compilation..."
     echo "Detected $threads threads on your CPU, finna use em all."
 
-    #another nexted loop
+    #another nested loop
     #Since now we know what step sizes will be made (number of threads) the seq command can be used. It increments in steps of size $threads up until $dir_size
     #Outer loop: Move the compiling batch in steps of $threads through all student directories
     #Inner loop: Create the actualy threads
@@ -267,9 +275,9 @@ if [ $separate -ge 2 ]; then
             Progress_bar $((base + t)) $dir_size
             stu_dir="$(basename "${dirs[$((base + t))]}")"
             #start compiling everyones stuff. The & at the end of the command backgrounds the process. This allows multiple processes to be run in parallel. Ghetto threading yall!
-		        g++ StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST$stu_dir"  &>> .grader/Logs/compile_log &
-
-            if [ $? != 0 ]; then
+		        g++ -std=c++17 StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST"  &>> .grader/Logs/compile_log &
+         
+			if [ $? != 0 ]; then
                 echo "$stu_dir failed to compile" >> StudentsToGrade/"$stu_dir"/compile_fail.txt
             fi
             echo "$stu_dir" >> .grader/Logs/compile_log
@@ -287,6 +295,17 @@ fi
 
 ######################################################## Stage 3: Testing and Reporting ########################################################
 if [ $separate -eq 3 ]; then
-	echo "testing methodology goes here"
+
+	dirs=(StudentsToGrade/*)
+	dir_size=${#dirs[@]}
+	for index in $(seq 0 $((dir_size-1))); do
+		Progress_bar $((index)) $dir_size
+		stu_name="$(basename "${dirs[$index]}")"
+
+		#call the test script, it takes the students name as a cli arg
+		#echo "${dirs[$index]}"
+		"${dirs[$index]}"/test.sh "$stu_name"
+	done
+	
 fi
 #clean
