@@ -8,7 +8,7 @@ facebook.com ufl.edu
 ufl.edu google.com
 ufl.edu gmail.com
 maps.com facebook.com
-gmail.com maps.com" 
+gmail.com maps.com"
 
 "7 3
 google.com gmail.com
@@ -179,7 +179,7 @@ ans=(
 gmail.com 0.20
 google.com 0.10
 maps.com 0.30
-ufl.edu 0.20" 
+ufl.edu 0.20"
 
 "facebook.com 0.30
 gmail.com 0.15
@@ -274,7 +274,7 @@ trim() {
     # remove leading whitespace characters
     var="${1#"${1%%[![:space:]]*}"}"
     # remove trailing whitespace characters
-    var="${var%"${var##*[![:space:]]}"}"   
+    var="${var%"${var##*[![:space:]]}"}"
 }
 
 if [ ! -f "StudentsToGrade/"$1"/TEST" ]; then
@@ -282,23 +282,25 @@ if [ ! -f "StudentsToGrade/"$1"/TEST" ]; then
    exit 0
 fi
 
-i=0   
+i=0
+corr_cnt=0
 for case in "${tests[@]}"; do
-    
+
 
     res="$(echo -e "$case" | timeout 12 StudentsToGrade/"$1"/TEST)"
     trim "$res"
     res="$var"
-    echo "$res"
     if [ "$res" == "${ans[$i]}" ]; then
         rtn_arr[$i]=1
+		corr_cnt=$((corr_cnt + 1))
     else
         rtn_arr[$i]=0
     fi
 
     i=$((i + 1))
 done
+frac="'$corr_cnt/${#tests[@]}"
 rtn="$(echo "${rtn_arr[*]}")"
 rtn=${rtn// /,}
-echo "$1,$rtn" >> Results/results.csv
+echo "$1,$rtn,$frac" >> Results/results.csv
 
