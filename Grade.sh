@@ -275,7 +275,7 @@ if [ $separate -ge 2 ]; then
             Progress_bar $((base + t)) $dir_size
             stu_dir="$(basename "${dirs[$((base + t))]}")"
             #start compiling everyones stuff. The & at the end of the command backgrounds the process. This allows multiple processes to be run in parallel. Ghetto threading yall!
-		        g++ -std=c++17 StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST"  &>> .grader/Logs/compile_log &
+		        g++ -std=c++11 StudentsToGrade/"$stu_dir"/*.cpp -o StudentsToGrade/"$stu_dir"/"TEST"  &>> .grader/Logs/compile_log &
          
 			if [ $? != 0 ]; then
                 echo "$stu_dir failed to compile" >> StudentsToGrade/"$stu_dir"/compile_fail.txt
@@ -298,6 +298,7 @@ if [ $separate -eq 3 ]; then
 
 	dirs=(StudentsToGrade/*)
 	dir_size=${#dirs[@]}
+	echo "Name, Test1, Test2, Test3, Test4, Test5, Test6, Test7, Test8, Test9,Score" >> Results/results.csv
 	for index in $(seq 0 $((dir_size-1))); do
 		Progress_bar $((index)) $dir_size
 		stu_name="$(basename "${dirs[$index]}")"

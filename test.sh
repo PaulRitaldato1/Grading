@@ -169,9 +169,7 @@ z q
 z r
 z s
 z t
-z u"
-
-"1 1")
+z u")
 
 
 ans=(
@@ -264,9 +262,7 @@ t 0.01
 u 0.01
 x 0.00
 y 0.00
-z 0.00"
-
-"aa")
+z 0.00")
 
 
 trim() {
@@ -282,23 +278,26 @@ if [ ! -f "StudentsToGrade/"$1"/TEST" ]; then
    exit 0
 fi
 
-i=0   
+i=0
+correct_cnt=0
 for case in "${tests[@]}"; do
     
 
     res="$(echo -e "$case" | timeout 12 StudentsToGrade/"$1"/TEST)"
     trim "$res"
     res="$var"
-    echo "$res"
     if [ "$res" == "${ans[$i]}" ]; then
         rtn_arr[$i]=1
+        correct_cnt=$((correct_cnt + 1))
     else
         rtn_arr[$i]=0
     fi
 
     i=$((i + 1))
 done
+total=${#tests[@]}
+frac="$correct_cnt/$total"
 rtn="$(echo "${rtn_arr[*]}")"
 rtn=${rtn// /,}
-echo "$1,$rtn" >> Results/results.csv
+echo "$1,$rtn,'$frac" >> Results/results.csv
 
