@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-
 import sys
 import zipfile
-import os
+import os, os.path
 import glob
 import shutil #this is for removing non empty directories
-from multiprocessing import Pool
 import multiprocessing
+from multiprocessing import Pool, Process, Lock
 import csv
 import time
+import subprocess
+from subprocess import PIPE
+from subprocess import Popen
 #This is a python version of the script. Im doing this to help me learn python :)
 #There are gonna be little notes for myself all over this about cool stuff I found out about
 
@@ -53,8 +55,6 @@ def init():
 
 def clean():
     path = os.getcwd()
-    #os.remove(path + "/Canvas/*")
-   # os.rmdir(path + "/Canvas")
     shutil.rmtree(path + "/Canvas")
     shutil.rmtree(path + "/StudentsToGrade")
     shutil.rmtree(path + "/Results")
@@ -91,7 +91,6 @@ def correct_name(file_name):
         tmp = tmp[4].split(".")
     else:
         tmp = tmp[3].split(".")
-    #print(tmp)
     tmp2 = tmp[0].split("-")
     rtn = tmp2[0] + ext
     
@@ -113,8 +112,6 @@ def stage_1():
     #Separate student files
     print("Separating student submissions. Each student gets a directory all to themselves")
     files = sorted(os.listdir("Canvas/"))
-    #for j in files:
-    #    print(j.split("_")[0])
     i = 0
     size = len(files)
     while i < size - 1:
@@ -144,21 +141,54 @@ def compile(dir_name):
     os.system("g++ -std=c++11 " + "StudentsToGrade/" + dir_name + "/*.cpp -o StudentsToGrade/" + dir_name + "/TEST > /dev/null 2>&1")
 
 def stage_2():
-
+    
+    #files = sorted(os.listdir("StudentsToGrade/"))
     files = os.listdir("StudentsToGrade/")
     with Pool(multiprocessing.cpu_count()) as p:
         p.map(compile, files)
 
-def stage_3():
-    header = ["Name", "Test 1", "Test 2", "Test 3", "Test 4", "Test 5", "Test 6", "Test 7", "Test 8", "Test 9"]
-    results = open('results.csv', 'a+')
-    with results:
-        writer = csv.writer(results)
-        write.writerow(header)
-    results.close()
+def write_results(results,files):
+    with files:
+        writer = csv.writer(files)
+        writer.writerow(results)
 
+
+mutex = Lock()
+def run_test(stu_name):
+    test = ["7 2\ngoogle.com gmail.com\ngoogle.com maps.com\nfacebook.com ufl.edu\nufl.edu google.com\nufl.edu gmail.com\nmaps.com facebook.com\ngmail.com maps.com"]
+    answer = ["facebook.com 0.20\ngmail.com 0.20\ngoogle.com 0.10\nmaps.com 0.30\nufl.edu 0.20"]
+
+    results = [stu_name]
+    with open("tests.txt", 'rb') as inputFile:
+        try:
+            for i in inputFile:
+                exists=os.path.exists("StudentsToGrade/"+stu_name+"/TEST")
+                if(exists):
+                    proc = Popen("StudentsToGrade/"+stu_name+"/TEST", stdin=PIPE,stdout=PIPE)
+                    out, err  = proc.communicate(input=i)
+                    out = out.strip('b')
+                    out = out.strip('\'')
+                    print (out)
+                    if(out == answer[0]):
+                        results.append(1)
+        except:
+            print("ugh")
+
+    files = open('Results/results.csv', 'a+')
+
+    with mutex:
+        write_results(results, files)
         
 
+def stage_3():
+    header = ["Name", "Test 1", "Test 2", "Test 3", "Test 4", "Test 5", "Test 6", "Test 7", "Test 8", "Test 9"]
+    results = open('Results/results.csv', 'a+')
+    with results:
+        writer = csv.writer(results)
+        writer.writerow(header)
+        
+    with Pool(multiprocessing.cpu_count()) as p:
+        p.map(run_test, sorted(os.listdir("StudentsToGrade/")))
 
 
 def main():
@@ -182,5 +212,5 @@ def main():
             stage_2()
 
             if(int(stage_num) == 3):
-                stage_3
+                stage_3()
 main()
