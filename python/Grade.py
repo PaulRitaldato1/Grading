@@ -5,7 +5,7 @@ import os, os.path
 import glob
 import shutil #this is for removing non empty directories
 import multiprocessing
-from multiprocessing import Pool, Process, Lock
+from multiprocessing import Pool, Process
 import csv
 import time
 import subprocess
@@ -39,6 +39,7 @@ def process_args():
         print("\t\t\t 1. Unzip, and separate, and rename student files")
         print("\t\t\t 2. Compile student submissions")
         print("\t\t\t 3. Test compiled submissions")
+        sys.exit()
     else:
         print("Running the grading script...")
         print("Try passing the -h flag if you need help")
@@ -58,26 +59,6 @@ def clean():
     shutil.rmtree(path + "/Canvas")
     shutil.rmtree(path + "/StudentsToGrade")
     shutil.rmtree(path + "/Results")
-
-
-#def update_progress(progress):
-#    barLength = 100 
-#    status = ""
-#    if isinstance(progress, int):
-#        progress = float(progress)
-#    if not isinstance(progress, float):
-#        progress = 0
-#        status = "error: progress var must be float\r\n"
-#    if progress < 0:
-#        progress = 0
-#        status = "Halt...\r\n"
-#    if progress >= 1:
-#        progress = 1
-#        status = "Done...\r\n"
-#    block = int(round(barLength*progress))
-#    text = "\rPercent: [{0}] {1}% {2}".format( "#"*block + "-"*(barLength-block), progress*100, status)
-#    sys.stdout.write(text)
-#    sys.stdout.flush()
 
 def correct_name(file_name):
     tmp = file_name.split("_")
@@ -153,16 +134,17 @@ def write_results(results,files):
         writer.writerow(results)
 
 
-mutex = Lock()
 def run_test(stu_name):
     test = ["7 2\ngoogle.com gmail.com\ngoogle.com maps.com\nfacebook.com ufl.edu\nufl.edu google.com\nufl.edu gmail.com\nmaps.com facebook.com\ngmail.com maps.com"]
     answer = ["facebook.com 0.20\ngmail.com 0.20\ngoogle.com 0.10\nmaps.com 0.30\nufl.edu 0.20"]
-
+    
+    #list of the students results in the format: stu_name 1 0 1 0 1 3/5
+    #each number (1 or 0) represents if that passed that case and the fraction is their total score
     results = [stu_name]
-    with open("tests.txt", 'rb') as inputFile:
+    with open("tests.txt", 'r') as inputFile:
         try:
             for i in inputFile:
-                exists=os.path.exists("StudentsToGrade/"+stu_name+"/TEST")
+                exists=os.path.isfile("StudentsToGrade/"+stu_name+"/TEST")
                 if(exists):
                     proc = Popen("StudentsToGrade/"+stu_name+"/TEST", stdin=PIPE,stdout=PIPE)
                     out, err  = proc.communicate(input=i)
@@ -176,8 +158,7 @@ def run_test(stu_name):
 
     files = open('Results/results.csv', 'a+')
 
-    with mutex:
-        write_results(results, files)
+    write_results(results, files)
         
 
 def stage_3():
@@ -187,9 +168,8 @@ def stage_3():
         writer = csv.writer(results)
         writer.writerow(header)
         
-    with Pool(multiprocessing.cpu_count()) as p:
-        p.map(run_test, sorted(os.listdir("StudentsToGrade/")))
-
+        for file in os.listdir("StudentsToGrade/"):
+            run_test(file)
 
 def main():
 #Notes:    
