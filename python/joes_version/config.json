@@ -1,0 +1,13 @@
+{
+    "submissions_archive": "submissions.zip",
+    "submissions_folder": "submissions",
+    "log_folder": "logs",
+    "required_files": [
+        "huffman_tree.cpp",
+        "huffman_tree.h"
+    ],
+    "project_base_folder": "project_base",
+    "threads": 1,
+    "timeout": 2,
+    "output_file": "reports.csv"
+}

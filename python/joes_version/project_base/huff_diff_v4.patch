@@ -1,0 +1,186 @@
+diff --git a/huffman_tree.cpp b/huffman_tree.cpp
+index 6ce1e3e..8be26ab 100644
+--- a/huffman_tree.cpp
++++ b/huffman_tree.cpp
+@@ -1,11 +1,33 @@
++#include <iostream>
++#include <fstream>
++#include <vector>
++#include <queue>
+ #include "huffman_tree.h"
+ 
+ huffman_tree::huffman_tree(const std::string &file_name){
+-
++	read_file(file_name);
++	std::priority_queue<huffman_node*,std::vector<huffman_node*>, CompareWeight> queue;
++	for(int i = 0; i < MAX_ASCII_CHAR_COUNT; i++){
++		if(values[i] > 0){
++			queue.push(new huffman_node(values[i], (char)i));
++		}
++	}
++	while(queue.size() > 1){
++		huffman_node *a = queue.top();
++		queue.pop();
++		huffman_node *b = queue.top();
++		queue.pop();
++		huffman_node *c = new huffman_node(a->weight + b->weight);
++		c->left = a;
++		c->right = b;
++		queue.push(c);
++	}
++	root = queue.top();
++	queue.pop();
+ }
+ 
+ huffman_tree::~huffman_tree(){
+-
++	delete root;
+ }
+ 
+ /*
+@@ -15,7 +37,51 @@ Postconditions: Returns the Huffman code for character if character is in the tr
+ 				and an empty string otherwise.
+ */
+ std::string huffman_tree::get_character_code(char character) const {
+-	return "";
++	std::string result = "";
++	bool worked = character_code(root, &result, character);
++	return (worked) ? result : NULL;
++}
++
++bool huffman_tree::character_code(huffman_node *root, std::string *string, char value) const {
++	if(root){
++		if(root -> isLeaf){
++			if(root -> character == value){
++				return true;
++			}
++		} else{
++			 if(root -> left){
++				 const bool res  = character_code(root -> left,string, value);
++				 if(res){
++					 string->insert(0,"0");
++					 return res;
++				 }
++			 }
++			 if(root -> right){
++				 const bool res  = character_code(root -> right,string, value);
++				 if(res){
++					 string->insert(0,"1");
++					 return res;
++				 }
++			 }
++		}
++	}
++
++	return false;
++}
++
++void huffman_tree::read_file(const std::string &file) {
++	std::ifstream in(file);
++	
++	if(!in) {
++		std::cout << "Cannot open input file.\n";
++		return;
++	}
++
++	while(in) {
++    	values[(int)in.get()]++;
++  	}
++ 	
++	in.close();
+ }
+ 
+ /*
+@@ -24,7 +90,16 @@ Postconditions: Returns the Huffman encoding for the contents of file_name
+ 				if file name exists and an empty string otherwise
+ */
+ std::string huffman_tree::encode(const std::string &file_name) const {
+-	return "";
++	std::ifstream in(file_name);
++	std::string result;
++	while(in){
++		const char tmp = in.get();
++		if(tmp == -1)
++			break;
++		result += get_character_code(tmp);
++	}
++	in.close();
++	return result;
+ }
+ 
+ /*
+@@ -33,5 +108,23 @@ Postconditions: Returns the plaintext represented by the string if the string
+ 				is a valid Huffman encoding and an empty string otherwise
+ */
+ std::string huffman_tree::decode(const std::string &string_to_decode) const {
+-	return "";
++	std::string result;
++	huffman_node *trav = root;
++	for(std::string::const_iterator it=string_to_decode.begin(); it!=string_to_decode.end(); ++it){
++		const char tmp = *it;
++		if(!trav){
++			return NULL; // TODO idk what it should return tbh atm
++		}
++		if(tmp == '0'){
++			trav = trav -> left;
++		} else{
++			trav = trav -> right;
++		}
++
++		if(trav -> isLeaf){
++			result.push_back(trav -> character);
++			trav = root;
++		}
++	}
++	return result;
+ }
+diff --git a/huffman_tree.h b/huffman_tree.h
+index 9ed5370..38b237d 100644
+--- a/huffman_tree.h
++++ b/huffman_tree.h
+@@ -3,6 +3,29 @@
+ 
+ #include <iostream>
+ 
++#define MAX_ASCII_CHAR_COUNT 128
++
++struct huffman_node{
++	const int weight;
++	const char character;
++	const bool isLeaf;
++	huffman_node *left = nullptr;
++	huffman_node *right = nullptr;
++
++	huffman_node(int weight, char character): weight(weight), character(character), isLeaf(true){}
++	huffman_node(int weight): weight(weight), character('\0'), isLeaf(false){}
++	~huffman_node() {
++		delete left;
++		delete right;
++	}
++};
++
++struct CompareWeight {
++    bool operator()(huffman_node const * a, huffman_node const * b) const {
++        return a->weight > b->weight;
++    }
++};
++
+ class huffman_tree {
+ 	public:
+ 		huffman_tree(const std::string &file_name);
+@@ -11,6 +34,14 @@ class huffman_tree {
+ 		std::string get_character_code(char character) const;
+ 		std::string encode(const std::string &file_name) const;
+ 		std::string decode(const std::string &string_to_decode) const;	
++
++	private:
++		int values[MAX_ASCII_CHAR_COUNT] = {0};
++		void read_file(const std::string &file_name);
++		bool character_code(huffman_node *root, std::string *string, char value) const;
++		void print_codes_helper(huffman_node *root, std::string string, std::ostream &out) const;
++		huffman_node *root;	
++
+ };
+ 
+ #endif
+\ No newline at end of file
