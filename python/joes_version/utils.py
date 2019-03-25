@@ -44,6 +44,23 @@ def build_project(test_runner_folder, log_file = None, clean_build = False):
 def clean_xml(output):
     return re.sub("<Expanded>[\s\S]*?<\/Expanded>", "", output.decode("utf-8"))
 
+def parse_section(section_root, case_number, section_name):
+    test_results = {}
+    children = section_root.findall('Section')
+    
+    if(children != []):
+        for child in section_root.findall('Section'):
+            child_name = section_name + ">" + child.attrib['name']
+            new_cases = parse_section(child, case_number, child_name)
+            test_results.update(new_cases)
+            case_number += len(new_cases)
+    elif section_root.find('OverallResults') != None:
+        name = "Test Case {}: {}".format(case_number, section_name)
+        score = 1 if section_root.find('OverallResults').attrib['failures'] == '0' else 0
+        test_results[name] = score
+    
+    return test_results
+
 def parse_results(output):
     test_results = {}
     output = clean_xml(output)
@@ -51,12 +68,11 @@ def parse_results(output):
     xml_root = ET.fromstring(output)
     # go through each test case, get its overall result
     # set the score to 1 if it passed, otherwise set score to 0
-    i = 1
+    case_number = 1
     for test_case in xml_root.find('Group').findall('TestCase'):
-        name = "Test Case {}: {}".format(i, test_case.attrib['name'])
-        score = 1 if test_case.find('OverallResult').attrib['success'] == 'true' else 0
-        test_results[name] = score
-        i += 1
+        new_cases = parse_section(test_case, case_number, test_case.attrib['name'])
+        test_results.update(new_cases)
+        case_number += len(new_cases)
     
     return test_results
 
